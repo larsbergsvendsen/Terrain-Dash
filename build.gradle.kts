@@ -15,10 +15,13 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "java-library")
-
-    tasks.withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+    afterEvaluate {
+        if (!project.plugins.hasPlugin("com.android.application") &&
+            !project.plugins.hasPlugin("com.android.library")) {
+            tasks.withType<JavaCompile> {
+                sourceCompatibility = "17"
+                targetCompatibility = "17"
+            }
+        }
     }
 }

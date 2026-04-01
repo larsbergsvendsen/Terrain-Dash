@@ -1,0 +1,25 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Android
+local.properties
+*.apk
+*.aab
+
+# LibGDX
+*.hprof
+temp_sound.wav
+music_*.wav
+
+# OS
+.DS_Store
+Thumbs.db

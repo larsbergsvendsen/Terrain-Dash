@@ -157,16 +157,13 @@ public class VehiclePhysics {
         vehicle.getChassis().applyForceToCenter(force, true);
     }
 
-    /** Check if the vehicle is airborne (no wheel contacts) */
+    /** Check if the vehicle is airborne by testing vertical velocity stability */
     public static boolean isInAir(Vehicle vehicle) {
-        return !hasContact(vehicle.getWheelFront()) && !hasContact(vehicle.getWheelRear());
-    }
+        float vy = vehicle.getLinearVelocity().y;
+        float rearWheelVy = vehicle.getWheelRear().getLinearVelocity().y;
+        float frontWheelVy = vehicle.getWheelFront().getLinearVelocity().y;
 
-    private static boolean hasContact(Body wheel) {
-        for (int i = 0; i < wheel.getFixtureList().size; i++) {
-            // Check contacts via contact edge list
-        }
-        return wheel.getContactList().size > 0;
+        return Math.abs(vy) > 1.5f && Math.abs(rearWheelVy) > 1.5f && Math.abs(frontWheelVy) > 1.5f;
     }
 
     /** Compute landing impact force from vertical velocity */

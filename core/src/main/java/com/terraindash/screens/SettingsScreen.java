@@ -50,7 +50,8 @@ public class SettingsScreen extends ScreenAdapter {
                 game.getMusicManager().setVolume(vol);
             }
         });
-        root.add(musicSlider).width(300).row().padBottom(20);
+        root.add(musicSlider).width(300).padBottom(20);
+        root.row();
 
         root.add(new Label("SFX", skin)).padRight(20);
         Slider sfxSlider = new Slider(0f, 1f, 0.05f, false, skin);
@@ -63,7 +64,8 @@ public class SettingsScreen extends ScreenAdapter {
                 game.getSfxManager().setVolume(vol);
             }
         });
-        root.add(sfxSlider).width(300).row().padBottom(20);
+        root.add(sfxSlider).width(300).padBottom(20);
+        root.row();
 
         root.add(new Label("Tilt Sensitivity", skin)).padRight(20);
         Slider tiltSlider = new Slider(0.3f, 1.0f, 0.05f, false, skin);
@@ -74,7 +76,8 @@ public class SettingsScreen extends ScreenAdapter {
                 game.getSaveManager().setTiltSensitivity(((Slider) actor).getValue());
             }
         });
-        root.add(tiltSlider).width(300).row().padBottom(40);
+        root.add(tiltSlider).width(300).padBottom(40);
+        root.row();
 
         TextButton backBtn = new TextButton("BACK", skin);
         backBtn.addListener(new ClickListener() {
