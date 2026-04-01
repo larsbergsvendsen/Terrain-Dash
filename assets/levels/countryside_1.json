@@ -1,0 +1,71 @@
+{
+  "world": "countryside",
+  "level": 1,
+  "name": "Green Hills",
+  "description": "A gentle introduction to the countryside",
+  "length": 500,
+  "surface_type": "grass",
+  "friction": 0.7,
+  "terrain_seed": 42,
+  "terrain_params": {
+    "base_height": 5.0,
+    "amplitude_broad": 2.5,
+    "amplitude_medium": 1.0,
+    "amplitude_detail": 0.3,
+    "frequency_broad": 0.05,
+    "frequency_medium": 0.15,
+    "frequency_detail": 0.4
+  },
+  "coins": [
+    { "x": 15.0, "y": 8.0 },
+    { "x": 25.0, "y": 7.5 },
+    { "x": 38.0, "y": 9.0 },
+    { "x": 52.0, "y": 7.0 },
+    { "x": 65.0, "y": 8.5 },
+    { "x": 80.0, "y": 6.5 },
+    { "x": 95.0, "y": 9.5 },
+    { "x": 110.0, "y": 7.0 },
+    { "x": 130.0, "y": 8.0 },
+    { "x": 145.0, "y": 7.5 },
+    { "x": 160.0, "y": 9.0 },
+    { "x": 180.0, "y": 7.0 },
+    { "x": 200.0, "y": 8.5 },
+    { "x": 220.0, "y": 6.5 },
+    { "x": 240.0, "y": 10.0 },
+    { "x": 260.0, "y": 7.5 },
+    { "x": 280.0, "y": 8.0 },
+    { "x": 300.0, "y": 7.0 },
+    { "x": 330.0, "y": 9.0 },
+    { "x": 360.0, "y": 8.0 },
+    { "x": 390.0, "y": 7.5 },
+    { "x": 420.0, "y": 8.5 },
+    { "x": 450.0, "y": 7.0 },
+    { "x": 475.0, "y": 9.0 },
+    { "x": 490.0, "y": 8.0 }
+  ],
+  "boost_pads": [
+    { "x": 100.0, "y": 6.8, "boost_amount": 3.0 },
+    { "x": 300.0, "y": 7.2, "boost_amount": 3.0 }
+  ],
+  "obstacles": [],
+  "finish": {
+    "x": 500.0
+  },
+  "star_thresholds": {
+    "star_1_time": 60,
+    "star_2_time": 45,
+    "star_3_time": 35,
+    "star_1_coins": 10,
+    "star_2_coins": 18,
+    "star_3_coins": 25
+  },
+  "background": {
+    "sky_color_top": "#87CEEB",
+    "sky_color_bottom": "#E0F0FF",
+    "parallax_layers": [
+      { "texture": "bg_countryside_mountains", "speed": 0.1 },
+      { "texture": "bg_countryside_trees_far", "speed": 0.3 },
+      { "texture": "bg_countryside_trees_near", "speed": 0.6 }
+    ]
+  }
+}
