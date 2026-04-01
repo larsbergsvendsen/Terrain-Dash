@@ -14,15 +14,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.terraindash.TerrainDashGame;
+import com.terraindash.RealGame;
 import com.terraindash.ui.SkinFactory;
 
 public class SettingsScreen extends ScreenAdapter {
 
-    private final TerrainDashGame game;
+    private final RealGame game;
     private Stage stage;
 
-    public SettingsScreen(TerrainDashGame game) {
+    public SettingsScreen(RealGame game) {
         this.game = game;
     }
 

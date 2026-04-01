@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.terraindash.TerrainDashGame;
+import com.terraindash.RealGame;
 import com.terraindash.audio.SoundGenerator;
 import com.terraindash.effects.CameraController;
 import com.terraindash.ui.HUD;
@@ -17,7 +17,7 @@ import com.terraindash.world.GameWorld;
 
 public class GameScreen extends ScreenAdapter {
 
-    private final TerrainDashGame game;
+    private final RealGame game;
     private final String worldId;
     private final int levelIndex;
 
@@ -34,7 +34,7 @@ public class GameScreen extends ScreenAdapter {
     private boolean initialized = false;
     private float flipWarningCooldown = 0f;
 
-    public GameScreen(TerrainDashGame game, String worldId, int levelIndex) {
+    public GameScreen(RealGame game, String worldId, int levelIndex) {
         this.game = game;
         this.worldId = worldId;
         this.levelIndex = levelIndex;

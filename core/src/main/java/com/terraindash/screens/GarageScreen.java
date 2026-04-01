@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.terraindash.TerrainDashGame;
+import com.terraindash.RealGame;
 import com.terraindash.ui.SkinFactory;
 
 public class GarageScreen extends ScreenAdapter {
@@ -33,12 +33,12 @@ public class GarageScreen extends ScreenAdapter {
         200, 300, 450, 650, 900, 1200, 1600, 2100, 2700, 3500
     };
 
-    private final TerrainDashGame game;
+    private final RealGame game;
     private Stage stage;
     private Skin skin;
     private int selectedVehicleIndex = 0;
 
-    public GarageScreen(TerrainDashGame game) {
+    public GarageScreen(RealGame game) {
         this.game = game;
     }
 

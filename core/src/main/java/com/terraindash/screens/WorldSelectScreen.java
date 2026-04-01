@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.terraindash.TerrainDashGame;
+import com.terraindash.RealGame;
 import com.terraindash.ui.SkinFactory;
 
 public class WorldSelectScreen extends ScreenAdapter {
@@ -25,11 +25,11 @@ public class WorldSelectScreen extends ScreenAdapter {
         {"sky", "Sky Highway"}
     };
 
-    private final TerrainDashGame game;
+    private final RealGame game;
     private Stage stage;
     private Skin skin;
 
-    public WorldSelectScreen(TerrainDashGame game) {
+    public WorldSelectScreen(RealGame game) {
         this.game = game;
     }
 

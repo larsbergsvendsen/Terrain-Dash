@@ -11,12 +11,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.terraindash.TerrainDashGame;
+import com.terraindash.RealGame;
 import com.terraindash.ui.SkinFactory;
 
 public class ResultScreen extends ScreenAdapter {
 
-    private final TerrainDashGame game;
+    private final RealGame game;
     private final String worldId;
     private final int levelIndex;
     private final boolean completed;
@@ -27,7 +27,7 @@ public class ResultScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
 
-    public ResultScreen(TerrainDashGame game, String worldId, int levelIndex,
+    public ResultScreen(RealGame game, String worldId, int levelIndex,
                         boolean completed, int coinsCollected, float distance, float time) {
         this.game = game;
         this.worldId = worldId;

@@ -11,20 +11,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.terraindash.TerrainDashGame;
+import com.terraindash.RealGame;
 import com.terraindash.ui.SkinFactory;
 
 public class LevelSelectScreen extends ScreenAdapter {
 
     private static final int LEVELS_PER_WORLD = 5;
 
-    private final TerrainDashGame game;
+    private final RealGame game;
     private final String worldId;
     private final String worldName;
     private Stage stage;
     private Skin skin;
 
-    public LevelSelectScreen(TerrainDashGame game, String worldId, String worldName) {
+    public LevelSelectScreen(RealGame game, String worldId, String worldName) {
         this.game = game;
         this.worldId = worldId;
         this.worldName = worldName;

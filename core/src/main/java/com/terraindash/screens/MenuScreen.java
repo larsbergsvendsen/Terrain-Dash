@@ -11,15 +11,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.terraindash.TerrainDashGame;
+import com.terraindash.RealGame;
 import com.terraindash.ui.SkinFactory;
 
 public class MenuScreen extends ScreenAdapter {
 
-    private final TerrainDashGame game;
+    private final RealGame game;
     private Stage stage;
 
-    public MenuScreen(TerrainDashGame game) {
+    public MenuScreen(RealGame game) {
         this.game = game;
     }
 
@@ -66,8 +66,6 @@ public class MenuScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        game.initAudioIfNeeded();
-
         Gdx.gl.glClearColor(0.08f, 0.08f, 0.18f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
