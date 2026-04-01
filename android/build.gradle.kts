@@ -5,6 +5,8 @@ plugins {
 
 val gdxVersion: String by project
 
+val nativeDeps by configurations.creating
+
 android {
     namespace = "com.terraindash"
     compileSdk = 34
@@ -15,6 +17,9 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        }
     }
 
     buildTypes {
@@ -43,6 +48,7 @@ android {
     sourceSets {
         getByName("main") {
             assets.srcDirs(rootProject.file("assets"))
+            jniLibs.srcDirs("libs")
         }
     }
 }
@@ -50,16 +56,43 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
-    implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
-    implementation("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi-v7a")
-    implementation("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-arm64-v8a")
-    implementation("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86")
-    implementation("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86_64")
-    implementation("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a")
-    implementation("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a")
-    implementation("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86")
-    implementation("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64")
+
+    nativeDeps("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a")
+    nativeDeps("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
+    nativeDeps("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
+    nativeDeps("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
+    nativeDeps("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-armeabi-v7a")
+    nativeDeps("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-arm64-v8a")
+    nativeDeps("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86")
+    nativeDeps("com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-x86_64")
+    nativeDeps("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a")
+    nativeDeps("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a")
+    nativeDeps("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86")
+    nativeDeps("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64")
+}
+
+tasks.register("copyNatives") {
+    doLast {
+        val abis = mapOf(
+            "armeabi-v7a" to "armeabi-v7a",
+            "arm64-v8a" to "arm64-v8a",
+            "x86_64" to "x86_64",
+            "x86" to "x86"
+        )
+
+        nativeDeps.files.forEach { jar ->
+            val name = jar.name
+            val abi = abis.keys.firstOrNull { name.contains(it) } ?: return@forEach
+            val targetDir = file("libs/$abi")
+            targetDir.mkdirs()
+
+            zipTree(jar).files.filter { it.name.endsWith(".so") }.forEach { so ->
+                so.copyTo(File(targetDir, so.name), overwrite = true)
+            }
+        }
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn("copyNatives")
 }
