@@ -132,6 +132,12 @@ public class VehiclePhysics {
         vehicle.getJointRear().setMaxMotorTorque(vehicle.getConfig().getMotorTorque() * torqueScale);
     }
 
+    /** Release motor (coast) */
+    public static void releaseMotor(Vehicle vehicle) {
+        vehicle.getJointRear().setMotorSpeed(0f);
+        vehicle.getJointRear().setMaxMotorTorque(0f);
+    }
+
     /** Apply rotational torque based on player tilt, with air-control bonus */
     public static void applyTiltTorque(Vehicle vehicle, float tiltInput) {
         if (tiltInput == 0f) return;

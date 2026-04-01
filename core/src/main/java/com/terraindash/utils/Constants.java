@@ -5,8 +5,8 @@ public final class Constants {
     private Constants() {}
 
     // Display
-    public static final float VIEWPORT_WIDTH = 20f;   // meters
-    public static final float VIEWPORT_HEIGHT = 12f;   // meters
+    public static final float VIEWPORT_WIDTH = 14f;   // meters (closer zoom)
+    public static final float VIEWPORT_HEIGHT = 8f;    // meters
     public static final float PIXELS_PER_METER = 64f;
 
     // Physics
@@ -22,11 +22,11 @@ public final class Constants {
     public static final float FLIP_ANGLE_THRESHOLD = 2.8f;    // ~160 degrees in radians
 
     // Camera
-    public static final float CAMERA_LERP = 0.1f;
-    public static final float CAMERA_LOOK_AHEAD = 3f;         // meters ahead of vehicle
-    public static final float CAMERA_MIN_ZOOM = 0.8f;
-    public static final float CAMERA_MAX_ZOOM = 1.5f;
-    public static final float CAMERA_SPEED_ZOOM_FACTOR = 0.02f;
+    public static final float CAMERA_LERP = 0.08f;
+    public static final float CAMERA_LOOK_AHEAD = 2.5f;
+    public static final float CAMERA_MIN_ZOOM = 0.55f;        // close-in default
+    public static final float CAMERA_MAX_ZOOM = 1.1f;         // zooms out at high speed
+    public static final float CAMERA_SPEED_ZOOM_FACTOR = 0.025f;
 
     // Terrain
     public static final float TERRAIN_CHUNK_WIDTH = 40f;      // meters

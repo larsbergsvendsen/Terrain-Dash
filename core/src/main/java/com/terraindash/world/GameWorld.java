@@ -50,6 +50,7 @@ public class GameWorld implements Disposable {
     private float flipTimer = 0f;
 
     private float tiltInput = 0f;
+    private boolean gasPressed = false;
     private float dustTimer = 0f;
     private boolean wasInAir = false;
     private float previousVy = 0f;
@@ -176,21 +177,17 @@ public class GameWorld implements Disposable {
         shape.dispose();
     }
 
-    public void handleInput(boolean touching, float touchXNormalized) {
-        if (!touching) {
-            tiltInput = 0f;
-            return;
-        }
-
-        if (touchXNormalized < 0.5f) {
-            tiltInput = -1f;
-        } else {
-            tiltInput = 1f;
-        }
+    public void handleInput(float tilt, boolean gas) {
+        this.tiltInput = tilt;
+        this.gasPressed = gas;
     }
 
     public void stepPhysics(float timeStep) {
-        VehiclePhysics.applyMotorForce(vehicle);
+        if (gasPressed) {
+            VehiclePhysics.applyMotorForce(vehicle);
+        } else {
+            VehiclePhysics.releaseMotor(vehicle);
+        }
         VehiclePhysics.applyTiltTorque(vehicle, tiltInput);
         VehiclePhysics.applyGroundedStabilization(vehicle);
 

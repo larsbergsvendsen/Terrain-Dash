@@ -10,10 +10,6 @@ import com.badlogic.gdx.utils.Disposable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Generates all game textures procedurally at runtime using Pixmaps.
- * No external image files are needed.
- */
 public class AssetGenerator implements Disposable {
 
     private final Map<String, Texture> textures = new HashMap<>();
@@ -21,361 +17,199 @@ public class AssetGenerator implements Disposable {
 
     public void generateAll() {
         try {
-            generateVehicleTextures();
+            generateBuggyChassis();
             generateWheelTexture();
-            generateTerrainTextures();
             generateCoinTexture();
             generateBoostPadTexture();
-            generateBackgroundTextures();
-            generateNitroFlameTexture();
             generateParticleTexture();
-            generateStarTexture();
-            Gdx.app.log("AssetGenerator", "All textures generated: " + textures.size());
+            generateNitroFlameTexture();
+            generateBackgroundTextures();
+            generateControlButtons();
+            Gdx.app.log("Assets", "Generated " + textures.size() + " textures");
         } catch (Exception e) {
-            Gdx.app.error("AssetGenerator", "Error generating assets: " + e.getMessage(), e);
+            Gdx.app.error("Assets", "Error: " + e.getMessage(), e);
         }
-    }
-
-    // ---- Vehicle textures ----
-
-    private void generateVehicleTextures() {
-        generateBuggyChassis();
-        generateMonsterTruckChassis();
-        generateSportsCarChassis();
-        generateRocketBikeChassis();
-        generateTankChassis();
-        generateHovercraftChassis();
     }
 
     private void generateBuggyChassis() {
-        int w = 128, h = 48;
+        int w = 192, h = 72;
         Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(0.2f, 0.6f, 0.9f, 1f);
-        pm.fillRectangle(8, 12, 112, 28);
-        pm.setColor(0.15f, 0.5f, 0.8f, 1f);
-        pm.fillRectangle(16, 4, 60, 12);
-        pm.setColor(0.7f, 0.85f, 1f, 0.7f);
-        pm.fillRectangle(20, 5, 24, 9);
-        pm.fillRectangle(48, 5, 20, 9);
-        pm.setColor(0.1f, 0.4f, 0.7f, 1f);
-        pm.fillRectangle(8, 38, 112, 4);
-        pm.setColor(1f, 0.8f, 0f, 1f);
-        pm.fillRectangle(108, 18, 12, 8);
-        pm.setColor(1f, 0f, 0f, 1f);
-        pm.fillRectangle(0, 18, 8, 8);
+
+        // Underbody / skid plate
+        setColor(pm, 0.12f, 0.35f, 0.6f);
+        fillRoundRect(pm, 10, 42, 172, 22, 6);
+
+        // Main body
+        setColor(pm, 0.2f, 0.55f, 0.9f);
+        fillRoundRect(pm, 6, 20, 180, 30, 8);
+
+        // Body highlight (top edge)
+        setColor(pm, 0.35f, 0.7f, 1f);
+        fillRoundRect(pm, 8, 20, 176, 6, 3);
+
+        // Cabin
+        setColor(pm, 0.15f, 0.45f, 0.78f);
+        fillRoundRect(pm, 30, 4, 80, 20, 6);
+
+        // Windshield
+        setColor(pm, 0.6f, 0.82f, 0.95f);
+        fillRoundRect(pm, 36, 6, 32, 14, 4);
+
+        // Rear window
+        setColor(pm, 0.5f, 0.75f, 0.9f);
+        fillRoundRect(pm, 74, 6, 28, 14, 4);
+
+        // Headlight
+        setColor(pm, 1f, 0.95f, 0.6f);
+        pm.fillCircle(174, 32, 6);
+        setColor(pm, 1f, 1f, 0.85f);
+        pm.fillCircle(174, 32, 3);
+
+        // Tail light
+        setColor(pm, 1f, 0.15f, 0.1f);
+        pm.fillCircle(12, 32, 5);
+        setColor(pm, 1f, 0.3f, 0.2f);
+        pm.fillCircle(12, 32, 3);
+
+        // Bumpers
+        setColor(pm, 0.3f, 0.3f, 0.35f);
+        fillRoundRect(pm, 2, 36, 8, 14, 3);
+        fillRoundRect(pm, 182, 36, 8, 14, 3);
+
+        // Side stripe
+        setColor(pm, 1f, 0.7f, 0.1f);
+        pm.fillRectangle(20, 35, 150, 3);
+
         store("chassis_buggy", pm);
     }
 
-    private void generateMonsterTruckChassis() {
-        int w = 160, h = 64;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(0.8f, 0.2f, 0.1f, 1f);
-        pm.fillRectangle(10, 16, 140, 36);
-        pm.setColor(0.6f, 0.15f, 0.08f, 1f);
-        pm.fillRectangle(20, 4, 80, 16);
-        pm.setColor(0.7f, 0.85f, 1f, 0.6f);
-        pm.fillRectangle(24, 6, 30, 12);
-        pm.fillRectangle(60, 6, 28, 12);
-        pm.setColor(0.9f, 0.9f, 0f, 1f);
-        pm.fillRectangle(144, 22, 14, 10);
-        pm.setColor(1f, 0f, 0f, 1f);
-        pm.fillRectangle(0, 24, 10, 10);
-        pm.setColor(0.3f, 0.3f, 0.3f, 1f);
-        pm.fillRectangle(10, 48, 140, 6);
-        store("chassis_monstertruck", pm);
-    }
-
-    private void generateSportsCarChassis() {
-        int w = 140, h = 36;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(0.9f, 0.1f, 0.2f, 1f);
-        pm.fillRectangle(4, 10, 132, 20);
-        pm.setColor(0.75f, 0.08f, 0.15f, 1f);
-        pm.fillRectangle(30, 2, 50, 10);
-        pm.setColor(0.7f, 0.85f, 1f, 0.7f);
-        pm.fillRectangle(34, 3, 42, 8);
-        pm.setColor(1f, 0.9f, 0.2f, 1f);
-        pm.fillRectangle(130, 14, 10, 8);
-        pm.setColor(1f, 0f, 0f, 0.8f);
-        pm.fillRectangle(0, 14, 6, 8);
-        pm.setColor(0.7f, 0.08f, 0.12f, 1f);
-        for (int x = 4; x < 136; x += 2) {
-            pm.drawPixel(x, 28);
-        }
-        store("chassis_sportscar", pm);
-    }
-
-    private void generateRocketBikeChassis() {
-        int w = 100, h = 40;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(0.1f, 0.1f, 0.1f, 1f);
-        pm.fillRectangle(10, 14, 80, 16);
-        pm.setColor(0.9f, 0.5f, 0f, 1f);
-        pm.fillRectangle(60, 8, 30, 8);
-        pm.setColor(0.3f, 0.3f, 0.3f, 1f);
-        pm.fillRectangle(20, 4, 20, 12);
-        pm.setColor(0.7f, 0.85f, 1f, 0.6f);
-        pm.fillRectangle(24, 5, 14, 8);
-        pm.setColor(1f, 0.3f, 0f, 1f);
-        pm.fillRectangle(86, 16, 14, 8);
-        pm.setColor(0.2f, 0.2f, 0.2f, 1f);
-        pm.fillRectangle(10, 28, 80, 6);
-        store("chassis_rocketbike", pm);
-    }
-
-    private void generateTankChassis() {
-        int w = 180, h = 72;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(0.35f, 0.4f, 0.3f, 1f);
-        pm.fillRectangle(6, 20, 168, 40);
-        pm.setColor(0.3f, 0.35f, 0.25f, 1f);
-        pm.fillRectangle(20, 6, 60, 18);
-        pm.setColor(0.4f, 0.45f, 0.35f, 1f);
-        pm.fillRectangle(70, 12, 80, 10);
-        pm.setColor(0.25f, 0.3f, 0.2f, 1f);
-        pm.fillRectangle(6, 56, 168, 8);
-        pm.setColor(0.7f, 0.85f, 1f, 0.4f);
-        pm.fillRectangle(26, 8, 18, 12);
-        pm.fillRectangle(50, 8, 16, 12);
-        store("chassis_tank", pm);
-    }
-
-    private void generateHovercraftChassis() {
-        int w = 140, h = 44;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(0.2f, 0.7f, 0.4f, 1f);
-        pm.fillRectangle(6, 8, 128, 24);
-        pm.setColor(0.15f, 0.6f, 0.35f, 1f);
-        pm.fillRectangle(20, 2, 60, 8);
-        pm.setColor(0.7f, 0.85f, 1f, 0.6f);
-        pm.fillRectangle(24, 3, 52, 6);
-        pm.setColor(0.5f, 0.9f, 0.6f, 0.5f);
-        pm.fillRectangle(6, 30, 128, 10);
-        pm.setColor(0f, 0.8f, 1f, 0.6f);
-        pm.fillRectangle(10, 32, 120, 6);
-        pm.setColor(1f, 0.9f, 0.2f, 1f);
-        pm.fillRectangle(128, 14, 10, 8);
-        store("chassis_hovercraft", pm);
-    }
-
     private void generateWheelTexture() {
-        int size = 32;
+        int size = 48;
         Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        int cx = size / 2, cy = size / 2, r = size / 2 - 1;
+        int cx = size / 2, cy = size / 2, r = size / 2 - 2;
 
-        // Tire (dark)
-        pm.setColor(0.2f, 0.2f, 0.2f, 1f);
+        // Outer tire with tread
+        setColor(pm, 0.18f, 0.18f, 0.2f);
         pm.fillCircle(cx, cy, r);
-        // Rim (silver)
-        pm.setColor(0.6f, 0.6f, 0.65f, 1f);
-        pm.fillCircle(cx, cy, r - 4);
-        // Hub
-        pm.setColor(0.4f, 0.4f, 0.45f, 1f);
-        pm.fillCircle(cx, cy, 3);
-        // Spoke lines
-        pm.setColor(0.5f, 0.5f, 0.55f, 1f);
+
+        // Tread pattern
+        setColor(pm, 0.25f, 0.25f, 0.27f);
+        for (int i = 0; i < 16; i++) {
+            float angle = (float) (i * Math.PI * 2 / 16);
+            int x1 = cx + (int) (Math.cos(angle) * (r - 3));
+            int y1 = cy + (int) (Math.sin(angle) * (r - 3));
+            int x2 = cx + (int) (Math.cos(angle) * r);
+            int y2 = cy + (int) (Math.sin(angle) * r);
+            pm.drawLine(x1, y1, x2, y2);
+        }
+
+        // Inner tire wall
+        setColor(pm, 0.22f, 0.22f, 0.24f);
+        pm.fillCircle(cx, cy, r - 5);
+
+        // Rim
+        setColor(pm, 0.7f, 0.72f, 0.75f);
+        pm.fillCircle(cx, cy, r - 8);
+
+        // Rim detail
+        setColor(pm, 0.55f, 0.57f, 0.6f);
+        pm.fillCircle(cx, cy, r - 11);
+
+        // Spokes
+        setColor(pm, 0.75f, 0.77f, 0.8f);
         for (int i = 0; i < 5; i++) {
-            float angle = (float) (i * Math.PI * 2.0 / 5.0);
-            int ex = cx + (int) (Math.cos(angle) * (r - 5));
-            int ey = cy + (int) (Math.sin(angle) * (r - 5));
+            float angle = (float) (i * Math.PI * 2 / 5);
+            int ex = cx + (int) (Math.cos(angle) * (r - 9));
+            int ey = cy + (int) (Math.sin(angle) * (r - 9));
             pm.drawLine(cx, cy, ex, ey);
+            pm.drawLine(cx + 1, cy, ex + 1, ey);
         }
-        // Tread marks
-        pm.setColor(0.25f, 0.25f, 0.25f, 1f);
-        for (int i = 0; i < 12; i++) {
-            float angle = (float) (i * Math.PI * 2.0 / 12.0);
-            int ex = cx + (int) (Math.cos(angle) * r);
-            int ey = cy + (int) (Math.sin(angle) * r);
-            pm.drawPixel(ex, ey);
-        }
+
+        // Hub cap
+        setColor(pm, 0.8f, 0.82f, 0.85f);
+        pm.fillCircle(cx, cy, 4);
+        setColor(pm, 0.6f, 0.62f, 0.65f);
+        pm.fillCircle(cx, cy, 2);
 
         store("wheel", pm);
     }
 
-    // ---- Terrain textures ----
-
-    private void generateTerrainTextures() {
-        generateTerrainSurface("terrain_grass", 0.3f, 0.65f, 0.2f, 0.25f, 0.5f, 0.15f);
-        generateTerrainSurface("terrain_sand", 0.85f, 0.75f, 0.5f, 0.75f, 0.65f, 0.4f);
-        generateTerrainSurface("terrain_ice", 0.7f, 0.85f, 0.95f, 0.6f, 0.75f, 0.85f);
-        generateTerrainSurface("terrain_asphalt", 0.35f, 0.35f, 0.38f, 0.3f, 0.3f, 0.32f);
-        generateTerrainSurface("terrain_dirt", 0.5f, 0.35f, 0.2f, 0.4f, 0.28f, 0.15f);
-        generateTerrainSurface("terrain_lava", 0.45f, 0.3f, 0.25f, 0.35f, 0.22f, 0.18f);
-    }
-
-    private void generateTerrainSurface(String name, float r1, float g1, float b1,
-                                         float r2, float g2, float b2) {
-        int w = 64, h = 64;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-
-        for (int y = 0; y < h; y++) {
-            float t = (float) y / h;
-            float r = r1 + (r2 - r1) * t;
-            float g = g1 + (g2 - g1) * t;
-            float b = b1 + (b2 - b1) * t;
-
-            for (int x = 0; x < w; x++) {
-                float noise = (float) (Math.sin(x * 0.5 + y * 0.3) * 0.03
-                    + Math.sin(x * 1.2 + y * 0.7) * 0.02);
-                pm.setColor(
-                    Math.max(0, Math.min(1, r + noise)),
-                    Math.max(0, Math.min(1, g + noise)),
-                    Math.max(0, Math.min(1, b + noise)),
-                    1f
-                );
-                pm.drawPixel(x, y);
-            }
-        }
-
-        store(name, pm);
-    }
-
-    // ---- Game entity textures ----
-
     private void generateCoinTexture() {
-        int size = 24;
+        int size = 36;
         Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
         int cx = size / 2, cy = size / 2;
 
-        pm.setColor(1f, 0.85f, 0.2f, 1f);
-        pm.fillCircle(cx, cy, size / 2 - 1);
-        pm.setColor(0.9f, 0.75f, 0.1f, 1f);
-        pm.fillCircle(cx, cy, size / 2 - 3);
-        pm.setColor(1f, 0.9f, 0.3f, 1f);
-        pm.fillCircle(cx - 1, cy - 1, size / 2 - 5);
+        // Shadow
+        setColor(pm, 0.6f, 0.5f, 0.1f);
+        pm.fillCircle(cx + 1, cy + 1, size / 2 - 2);
+
+        // Gold outer
+        setColor(pm, 1f, 0.82f, 0.15f);
+        pm.fillCircle(cx, cy, size / 2 - 2);
+
+        // Gold inner
+        setColor(pm, 0.95f, 0.75f, 0.1f);
+        pm.fillCircle(cx, cy, size / 2 - 5);
+
+        // Highlight
+        setColor(pm, 1f, 0.95f, 0.5f);
+        pm.fillCircle(cx - 3, cy - 3, size / 2 - 9);
+
+        // $ symbol lines
+        setColor(pm, 0.75f, 0.6f, 0.05f);
+        pm.fillRectangle(cx - 1, cy - 6, 3, 13);
+        pm.fillRectangle(cx - 5, cy - 4, 11, 3);
+        pm.fillRectangle(cx - 5, cy + 2, 11, 3);
 
         store("coin", pm);
     }
 
     private void generateBoostPadTexture() {
-        int w = 48, h = 16;
+        int w = 64, h = 24;
         Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
 
-        pm.setColor(1f, 0.5f, 0f, 0.9f);
-        pm.fillRectangle(0, 0, w, h);
+        // Base
+        setColor(pm, 1f, 0.45f, 0f);
+        fillRoundRect(pm, 0, 0, w, h, 6);
 
-        pm.setColor(1f, 0.8f, 0.2f, 1f);
+        // Inner glow
+        setColor(pm, 1f, 0.65f, 0.1f);
+        fillRoundRect(pm, 3, 3, w - 6, h - 6, 4);
+
+        // Arrow shapes (using rectangles)
+        setColor(pm, 1f, 0.9f, 0.3f);
         for (int i = 0; i < 3; i++) {
-            int ax = 8 + i * 14;
-            pm.fillRectangle(ax + 2, 3, 4, h - 6);
+            int ax = 10 + i * 18;
+            pm.fillRectangle(ax, h / 2 - 4, 3, 8);
+            pm.fillRectangle(ax + 3, h / 2 - 2, 3, 4);
         }
 
         store("boost_pad", pm);
     }
 
-    // ---- Background textures ----
+    private void generateParticleTexture() {
+        int size = 16;
+        Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+        int cx = size / 2, cy = size / 2;
+        float r = size / 2f;
 
-    private void generateBackgroundTextures() {
-        generateSkyGradient("bg_countryside", 0.53f, 0.81f, 0.92f, 0.88f, 0.94f, 1f);
-        generateSkyGradient("bg_desert", 0.95f, 0.8f, 0.55f, 1f, 0.92f, 0.7f);
-        generateSkyGradient("bg_arctic", 0.7f, 0.82f, 0.9f, 0.9f, 0.95f, 1f);
-        generateSkyGradient("bg_neon", 0.05f, 0.02f, 0.15f, 0.1f, 0.05f, 0.25f);
-        generateSkyGradient("bg_volcano", 0.3f, 0.1f, 0.05f, 0.5f, 0.2f, 0.1f);
-        generateSkyGradient("bg_sky", 0.4f, 0.6f, 0.95f, 0.7f, 0.85f, 1f);
-
-        generateMountainLayer("mountains_countryside", 0.4f, 0.55f, 0.4f, 0.3f, 0.45f, 0.3f);
-        generateMountainLayer("mountains_desert", 0.7f, 0.55f, 0.35f, 0.6f, 0.45f, 0.25f);
-        generateMountainLayer("mountains_arctic", 0.85f, 0.9f, 0.95f, 0.7f, 0.75f, 0.82f);
-        generateMountainLayer("mountains_neon", 0.1f, 0.05f, 0.2f, 0.15f, 0.08f, 0.3f);
-        generateMountainLayer("mountains_volcano", 0.25f, 0.12f, 0.08f, 0.35f, 0.15f, 0.05f);
-        generateMountainLayer("mountains_sky", 0.8f, 0.88f, 1f, 0.6f, 0.7f, 0.9f);
-
-        generateTreeLayer();
-        generateCloudTexture();
-    }
-
-    private void generateSkyGradient(String name, float r1, float g1, float b1,
-                                      float r2, float g2, float b2) {
-        int w = 4, h = 128;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-
-        for (int y = 0; y < h; y++) {
-            float t = (float) y / h;
-            pm.setColor(
-                r1 + (r2 - r1) * t,
-                g1 + (g2 - g1) * t,
-                b1 + (b2 - b1) * t,
-                1f
-            );
-            pm.drawLine(0, y, w - 1, y);
-        }
-
-        store(name, pm);
-    }
-
-    private void generateMountainLayer(String name, float r1, float g1, float b1,
-                                        float r2, float g2, float b2) {
-        int w = 256, h = 96;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-
-        int[] peaks = new int[w];
-        for (int x = 0; x < w; x++) {
-            float n = (float) (
-                Math.sin(x * 0.02) * 30 +
-                Math.sin(x * 0.05 + 1.7) * 15 +
-                Math.sin(x * 0.11 + 3.2) * 8
-            );
-            peaks[x] = (int) (h / 2 + n);
-            peaks[x] = Math.max(8, Math.min(h - 4, peaks[x]));
-        }
-
-        for (int x = 0; x < w; x++) {
-            for (int y = peaks[x]; y < h; y++) {
-                float t = (float) (y - peaks[x]) / (h - peaks[x]);
-                pm.setColor(
-                    r1 + (r2 - r1) * t,
-                    g1 + (g2 - g1) * t,
-                    b1 + (b2 - b1) * t,
-                    1f
-                );
-                pm.drawPixel(x, y);
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                float dist = (float) Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+                if (dist < r) {
+                    float alpha = (1f - dist / r);
+                    alpha = alpha * alpha;
+                    pm.setColor(1f, 1f, 1f, alpha);
+                    pm.drawPixel(x, y);
+                }
             }
         }
 
-        store(name, pm);
+        store("particle", pm);
     }
-
-    private void generateTreeLayer() {
-        int w = 256, h = 64;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-
-        for (int i = 0; i < 12; i++) {
-            int tx = (int) (i * 22 + Math.sin(i * 2.3) * 8);
-            int th = 20 + (int) (Math.sin(i * 1.7) * 10);
-            int tw = 8 + (int) (Math.sin(i * 2.1) * 3);
-
-            pm.setColor(0.35f, 0.25f, 0.15f, 1f);
-            pm.fillRectangle(tx + tw / 2 - 1, h - th / 3, 3, th / 3);
-
-            pm.setColor(0.2f + (float) Math.sin(i) * 0.1f,
-                0.5f + (float) Math.sin(i * 1.3) * 0.1f,
-                0.15f, 1f);
-            pm.fillCircle(tx + tw / 2, h - th / 3 - tw, tw);
-            pm.fillCircle(tx + tw / 2 - tw / 2, h - th / 3 - tw / 2, tw - 2);
-            pm.fillCircle(tx + tw / 2 + tw / 2, h - th / 3 - tw / 2, tw - 2);
-        }
-
-        store("trees_layer", pm);
-    }
-
-    private void generateCloudTexture() {
-        int w = 64, h = 24;
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(1f, 1f, 1f, 0.7f);
-        pm.fillCircle(20, 14, 10);
-        pm.fillCircle(32, 10, 12);
-        pm.fillCircle(44, 14, 9);
-        pm.setColor(1f, 1f, 1f, 0.5f);
-        pm.fillCircle(26, 8, 8);
-        pm.fillCircle(38, 12, 10);
-
-        store("cloud", pm);
-    }
-
-    // ---- Effect textures ----
 
     private void generateNitroFlameTexture() {
-        int w = 32, h = 16;
+        int w = 48, h = 24;
         Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
         int cy = h / 2;
 
@@ -386,12 +220,11 @@ public class AssetGenerator implements Disposable {
                 float dy = Math.abs(y - cy);
                 if (dy < radius) {
                     float intensity = 1f - dy / radius;
-                    pm.setColor(
-                        1f,
-                        0.5f + 0.5f * intensity * (1f - t),
-                        0.1f * intensity,
-                        intensity * (1f - t * 0.5f)
-                    );
+                    float r = 1f;
+                    float g = 0.4f + 0.6f * intensity * (1f - t);
+                    float b = 0.1f * intensity * (1f - t);
+                    float a = intensity * (1f - t * 0.7f);
+                    pm.setColor(r, g, b, a);
                     pm.drawPixel(x, y);
                 }
             }
@@ -400,50 +233,143 @@ public class AssetGenerator implements Disposable {
         store("nitro_flame", pm);
     }
 
-    private void generateParticleTexture() {
-        int size = 8;
-        Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        int cx = size / 2, cy = size / 2;
-        float r = size / 2f;
+    private void generateBackgroundTextures() {
+        generateSkyGradient("bg_countryside", 0.45f, 0.72f, 0.92f, 0.82f, 0.92f, 1f);
+        generateSkyGradient("bg_desert", 0.9f, 0.75f, 0.5f, 1f, 0.9f, 0.65f);
+        generateSkyGradient("bg_arctic", 0.65f, 0.78f, 0.88f, 0.88f, 0.93f, 1f);
+        generateSkyGradient("bg_neon", 0.04f, 0.01f, 0.12f, 0.08f, 0.04f, 0.22f);
+        generateSkyGradient("bg_volcano", 0.25f, 0.08f, 0.04f, 0.45f, 0.18f, 0.08f);
+        generateSkyGradient("bg_sky", 0.35f, 0.55f, 0.92f, 0.65f, 0.82f, 1f);
 
-        for (int y = 0; y < size; y++) {
-            for (int x = 0; x < size; x++) {
-                float dist = (float) Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
-                if (dist < r) {
-                    float alpha = 1f - dist / r;
-                    pm.setColor(1f, 1f, 1f, alpha * alpha);
-                    pm.drawPixel(x, y);
-                }
+        generateMountainLayer("mountains_countryside", 0.35f, 0.5f, 0.38f, 0.28f, 0.42f, 0.28f);
+        generateMountainLayer("mountains_desert", 0.65f, 0.5f, 0.32f, 0.55f, 0.42f, 0.22f);
+        generateMountainLayer("mountains_arctic", 0.82f, 0.88f, 0.92f, 0.68f, 0.72f, 0.8f);
+        generateMountainLayer("mountains_neon", 0.08f, 0.04f, 0.18f, 0.12f, 0.06f, 0.28f);
+        generateMountainLayer("mountains_volcano", 0.22f, 0.1f, 0.06f, 0.32f, 0.13f, 0.04f);
+        generateMountainLayer("mountains_sky", 0.75f, 0.85f, 0.98f, 0.55f, 0.68f, 0.88f);
+
+        generateTreeLayer();
+        generateCloudTexture();
+    }
+
+    private void generateSkyGradient(String name, float r1, float g1, float b1,
+                                      float r2, float g2, float b2) {
+        int w = 4, h = 128;
+        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+        for (int y = 0; y < h; y++) {
+            float t = (float) y / h;
+            pm.setColor(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t, 1f);
+            pm.drawLine(0, y, w - 1, y);
+        }
+        store(name, pm);
+    }
+
+    private void generateMountainLayer(String name, float r1, float g1, float b1,
+                                        float r2, float g2, float b2) {
+        int w = 256, h = 96;
+        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+        for (int x = 0; x < w; x++) {
+            float n = (float) (Math.sin(x * 0.02) * 28 + Math.sin(x * 0.055 + 1.7) * 14
+                + Math.sin(x * 0.12 + 3.2) * 7);
+            int peak = Math.max(8, Math.min(h - 4, (int) (h / 2 + n)));
+            for (int y = peak; y < h; y++) {
+                float t = (float) (y - peak) / (h - peak);
+                pm.setColor(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t, 1f);
+                pm.drawPixel(x, y);
             }
         }
-
-        store("particle", pm);
+        store(name, pm);
     }
 
-    private void generateStarTexture() {
-        int size = 20;
-        Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        int cx = size / 2, cy = size / 2;
+    private void generateTreeLayer() {
+        int w = 256, h = 64;
+        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+        for (int i = 0; i < 10; i++) {
+            int tx = Math.min(w - 20, (int) (i * 25 + Math.sin(i * 2.3) * 6));
+            int tw = 7 + (int) (Math.sin(i * 2.1) * 2);
 
-        pm.setColor(1f, 0.9f, 0.2f, 1f);
-        for (int i = 0; i < 5; i++) {
-            float outerAngle = (float) (i * Math.PI * 2 / 5 - Math.PI / 2);
-            float innerAngle = (float) ((i + 0.5) * Math.PI * 2 / 5 - Math.PI / 2);
+            setColor(pm, 0.3f, 0.22f, 0.12f);
+            pm.fillRectangle(tx + tw / 2 - 1, h - 12, 3, 12);
 
-            int ox = cx + (int) (Math.cos(outerAngle) * 9);
-            int oy = cy + (int) (Math.sin(outerAngle) * 9);
-            int ix = cx + (int) (Math.cos(innerAngle) * 4);
-            int iy = cy + (int) (Math.sin(innerAngle) * 4);
-
-            pm.drawLine(cx, cy, ox, oy);
-            pm.drawLine(ox, oy, ix, iy);
+            float g = 0.45f + (float) Math.sin(i * 1.3) * 0.1f;
+            setColor(pm, 0.18f, g, 0.12f);
+            pm.fillCircle(tx + tw / 2, h - 14 - tw, tw);
+            pm.fillCircle(tx + tw / 2 - 3, h - 12 - tw / 2, tw - 1);
+            pm.fillCircle(tx + tw / 2 + 3, h - 12 - tw / 2, tw - 1);
         }
-        pm.fillCircle(cx, cy, 3);
-
-        store("star", pm);
+        store("trees_layer", pm);
     }
 
-    // ---- Utility ----
+    private void generateCloudTexture() {
+        int w = 80, h = 32;
+        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+        setColor(pm, 1f, 1f, 1f, 0.55f);
+        pm.fillCircle(24, 18, 12);
+        pm.fillCircle(40, 13, 14);
+        pm.fillCircle(56, 18, 11);
+        setColor(pm, 1f, 1f, 1f, 0.35f);
+        pm.fillCircle(32, 11, 10);
+        pm.fillCircle(48, 15, 12);
+        store("cloud", pm);
+    }
+
+    private void generateControlButtons() {
+        // Gas pedal (right side)
+        int s = 96;
+        Pixmap pm = new Pixmap(s, s, Pixmap.Format.RGBA8888);
+        setColor(pm, 0.15f, 0.65f, 0.2f, 0.55f);
+        pm.fillCircle(s / 2, s / 2, s / 2 - 2);
+        setColor(pm, 0.2f, 0.8f, 0.3f, 0.7f);
+        pm.fillCircle(s / 2, s / 2, s / 2 - 8);
+        // Arrow up
+        setColor(pm, 1f, 1f, 1f, 0.9f);
+        pm.fillRectangle(s / 2 - 3, s / 2 - 14, 6, 28);
+        pm.fillRectangle(s / 2 - 10, s / 2 - 8, 20, 6);
+        store("btn_gas", pm);
+
+        // Tilt left button
+        pm = new Pixmap(s, s, Pixmap.Format.RGBA8888);
+        setColor(pm, 0.6f, 0.4f, 0.15f, 0.55f);
+        pm.fillCircle(s / 2, s / 2, s / 2 - 2);
+        setColor(pm, 0.75f, 0.55f, 0.2f, 0.7f);
+        pm.fillCircle(s / 2, s / 2, s / 2 - 8);
+        // Arrow left
+        setColor(pm, 1f, 1f, 1f, 0.9f);
+        pm.fillRectangle(s / 2 - 14, s / 2 - 3, 28, 6);
+        pm.fillRectangle(s / 2 - 8, s / 2 - 10, 6, 20);
+        store("btn_tilt_left", pm);
+
+        // Tilt right button
+        pm = new Pixmap(s, s, Pixmap.Format.RGBA8888);
+        setColor(pm, 0.6f, 0.4f, 0.15f, 0.55f);
+        pm.fillCircle(s / 2, s / 2, s / 2 - 2);
+        setColor(pm, 0.75f, 0.55f, 0.2f, 0.7f);
+        pm.fillCircle(s / 2, s / 2, s / 2 - 8);
+        // Arrow right
+        setColor(pm, 1f, 1f, 1f, 0.9f);
+        pm.fillRectangle(s / 2 - 14, s / 2 - 3, 28, 6);
+        pm.fillRectangle(s / 2 + 2, s / 2 - 10, 6, 20);
+        store("btn_tilt_right", pm);
+    }
+
+    // ---- Helpers ----
+
+    private void setColor(Pixmap pm, float r, float g, float b) {
+        pm.setColor(r, g, b, 1f);
+    }
+
+    private void setColor(Pixmap pm, float r, float g, float b, float a) {
+        pm.setColor(r, g, b, a);
+    }
+
+    private void fillRoundRect(Pixmap pm, int x, int y, int w, int h, int radius) {
+        pm.fillRectangle(x + radius, y, w - radius * 2, h);
+        pm.fillRectangle(x, y + radius, w, h - radius * 2);
+        pm.fillCircle(x + radius, y + radius, radius);
+        pm.fillCircle(x + w - radius - 1, y + radius, radius);
+        pm.fillCircle(x + radius, y + h - radius - 1, radius);
+        pm.fillCircle(x + w - radius - 1, y + h - radius - 1, radius);
+    }
 
     private void store(String name, Pixmap pm) {
         Texture tex = new Texture(pm);
@@ -454,19 +380,12 @@ public class AssetGenerator implements Disposable {
         pm.dispose();
     }
 
-    public Texture getTexture(String name) {
-        return textures.get(name);
-    }
-
-    public TextureRegion getRegion(String name) {
-        return regions.get(name);
-    }
+    public Texture getTexture(String name) { return textures.get(name); }
+    public TextureRegion getRegion(String name) { return regions.get(name); }
 
     @Override
     public void dispose() {
-        for (Texture tex : textures.values()) {
-            tex.dispose();
-        }
+        for (Texture tex : textures.values()) tex.dispose();
         textures.clear();
         regions.clear();
     }
