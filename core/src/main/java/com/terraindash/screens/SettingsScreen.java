@@ -21,7 +21,6 @@ public class SettingsScreen extends ScreenAdapter {
 
     private final TerrainDashGame game;
     private Stage stage;
-    private Skin skin;
 
     public SettingsScreen(TerrainDashGame game) {
         this.game = game;
@@ -31,7 +30,7 @@ public class SettingsScreen extends ScreenAdapter {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        skin = SkinFactory.create();
+        Skin skin = SkinFactory.create();
 
         Table root = new Table();
         root.setFillParent(true);
@@ -39,29 +38,13 @@ public class SettingsScreen extends ScreenAdapter {
 
         root.add(new Label("SETTINGS", skin, "title")).colspan(2).padBottom(40).row();
 
-        root.add(new Label("Music", skin)).padRight(20);
-        Slider musicSlider = new Slider(0f, 1f, 0.05f, false, skin);
-        musicSlider.setValue(game.getSaveManager().getMusicVolume());
-        musicSlider.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                float vol = ((Slider) actor).getValue();
-                game.getSaveManager().setMusicVolume(vol);
-                game.getMusicManager().setVolume(vol);
-            }
-        });
-        root.add(musicSlider).width(300).padBottom(20);
-        root.row();
-
-        root.add(new Label("SFX", skin)).padRight(20);
+        root.add(new Label("SFX Volume", skin)).padRight(20);
         Slider sfxSlider = new Slider(0f, 1f, 0.05f, false, skin);
         sfxSlider.setValue(game.getSaveManager().getSfxVolume());
         sfxSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                float vol = ((Slider) actor).getValue();
-                game.getSaveManager().setSfxVolume(vol);
-                game.getSfxManager().setVolume(vol);
+                game.getSaveManager().setSfxVolume(((Slider) actor).getValue());
             }
         });
         root.add(sfxSlider).width(300).padBottom(20);

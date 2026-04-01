@@ -18,7 +18,6 @@ public class MenuScreen extends ScreenAdapter {
 
     private final TerrainDashGame game;
     private Stage stage;
-    private Skin skin;
 
     public MenuScreen(TerrainDashGame game) {
         this.game = game;
@@ -29,14 +28,13 @@ public class MenuScreen extends ScreenAdapter {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
-        skin = SkinFactory.create();
+        Skin skin = SkinFactory.create();
 
         Table root = new Table();
         root.setFillParent(true);
         stage.addActor(root);
 
-        Label title = new Label("TERRAIN DASH", skin, "title");
-        root.add(title).padBottom(60).row();
+        root.add(new Label("TERRAIN DASH", skin, "title")).padBottom(60).row();
 
         TextButton playButton = new TextButton("PLAY", skin);
         playButton.addListener(new ClickListener() {
@@ -56,15 +54,6 @@ public class MenuScreen extends ScreenAdapter {
         });
         root.add(garageButton).width(300).height(80).padBottom(20).row();
 
-        TextButton endlessButton = new TextButton("ENDLESS MODE", skin);
-        endlessButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new WorldSelectScreen(game));
-            }
-        });
-        root.add(endlessButton).width(300).height(80).padBottom(20).row();
-
         TextButton settingsButton = new TextButton("SETTINGS", skin);
         settingsButton.addListener(new ClickListener() {
             @Override
@@ -73,15 +62,14 @@ public class MenuScreen extends ScreenAdapter {
             }
         });
         root.add(settingsButton).width(300).height(80);
-
-        game.getMusicManager().play("menu");
     }
 
     @Override
     public void render(float delta) {
+        game.initAudioIfNeeded();
+
         Gdx.gl.glClearColor(0.08f, 0.08f, 0.18f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        game.getMusicManager().update(delta);
         stage.act(delta);
         stage.draw();
     }

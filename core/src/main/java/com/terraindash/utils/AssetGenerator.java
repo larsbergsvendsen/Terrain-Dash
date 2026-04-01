@@ -1,5 +1,6 @@
 package com.terraindash.utils;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,15 +20,20 @@ public class AssetGenerator implements Disposable {
     private final Map<String, TextureRegion> regions = new HashMap<>();
 
     public void generateAll() {
-        generateVehicleTextures();
-        generateWheelTexture();
-        generateTerrainTextures();
-        generateCoinTexture();
-        generateBoostPadTexture();
-        generateBackgroundTextures();
-        generateNitroFlameTexture();
-        generateParticleTexture();
-        generateStarTexture();
+        try {
+            generateVehicleTextures();
+            generateWheelTexture();
+            generateTerrainTextures();
+            generateCoinTexture();
+            generateBoostPadTexture();
+            generateBackgroundTextures();
+            generateNitroFlameTexture();
+            generateParticleTexture();
+            generateStarTexture();
+            Gdx.app.log("AssetGenerator", "All textures generated: " + textures.size());
+        } catch (Exception e) {
+            Gdx.app.error("AssetGenerator", "Error generating assets: " + e.getMessage(), e);
+        }
     }
 
     // ---- Vehicle textures ----
@@ -251,7 +257,7 @@ public class AssetGenerator implements Disposable {
         pm.setColor(1f, 0.8f, 0.2f, 1f);
         for (int i = 0; i < 3; i++) {
             int ax = 8 + i * 14;
-            pm.fillTriangle(ax, h / 2, ax + 6, 2, ax + 6, h - 2);
+            pm.fillRectangle(ax + 2, 3, 4, h - 6);
         }
 
         store("boost_pad", pm);

@@ -27,15 +27,11 @@ public class GameScreen extends ScreenAdapter {
     private CameraController cameraController;
     private HUD hud;
     private AssetGenerator assets;
-    private SoundGenerator soundGen;
 
     private float accumulator = 0f;
     private boolean paused = false;
     private boolean gameEnded = false;
-
-    // Sound state
-    private float engineSoundTimer = 0f;
-    private boolean wasNitro = false;
+    private boolean initialized = false;
     private float flipWarningCooldown = 0f;
 
     public GameScreen(TerrainDashGame game, String worldId, int levelIndex) {
@@ -46,32 +42,57 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        camera = new OrthographicCamera();
-        viewport = new FitViewport(Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT, camera);
-        viewport.apply(true);
+        Gdx.app.log("GameScreen", "show() worldId=" + worldId + " level=" + levelIndex);
 
-        assets = new AssetGenerator();
-        assets.generateAll();
+        try {
+            camera = new OrthographicCamera();
+            viewport = new FitViewport(Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT, camera);
+            viewport.apply(true);
 
-        soundGen = new SoundGenerator();
-        soundGen.generateAll();
+            hud = new HUD(game.getBatch());
 
-        gameWorld = new GameWorld(worldId, levelIndex, assets);
-        cameraController = new CameraController(camera);
-        hud = new HUD(game.getBatch());
+            InputMultiplexer multiplexer = new InputMultiplexer();
+            multiplexer.addProcessor(hud.getStage());
+            Gdx.input.setInputProcessor(multiplexer);
 
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(hud.getStage());
-        Gdx.input.setInputProcessor(multiplexer);
+            Gdx.app.log("GameScreen", "show() done, will init world on first render");
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "CRASH in show(): " + e.getMessage(), e);
+        }
+    }
 
-        // Play world music
-        game.getMusicManager().play(worldId);
+    private void initWorld() {
+        if (initialized) return;
+        initialized = true;
+
+        try {
+            Gdx.app.log("GameScreen", "initWorld() generating assets...");
+            assets = new AssetGenerator();
+            assets.generateAll();
+            Gdx.app.log("GameScreen", "initWorld() assets done, creating world...");
+
+            gameWorld = new GameWorld(worldId, levelIndex, assets);
+            cameraController = new CameraController(camera);
+
+            Gdx.app.log("GameScreen", "initWorld() complete");
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "CRASH in initWorld(): " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void render(float delta) {
-        // Always clear and draw, even when paused/ended, to avoid stale framebuffer
-        game.getMusicManager().update(delta);
+        Gdx.gl.glClearColor(0.1f, 0.15f, 0.3f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // no music
+
+        if (!initialized) {
+            initWorld();
+            return;
+        }
+
+        if (gameWorld == null) return;
 
         if (paused || gameEnded) {
             draw();
@@ -80,15 +101,19 @@ public class GameScreen extends ScreenAdapter {
 
         delta = Math.min(delta, 0.05f);
 
-        int prevCoins = gameWorld.getCoinsCollected();
-        boolean prevNitro = gameWorld.isNitroActive();
+        try {
+            int prevCoins = gameWorld.getCoinsCollected();
+            boolean prevNitro = gameWorld.isNitroActive();
 
-        handleInput();
-        updatePhysics(delta);
-        updateLogic(delta);
-        updateCamera(delta);
-        updateAudio(delta, prevCoins, prevNitro);
-        draw();
+            handleInput();
+            updatePhysics(delta);
+            updateLogic(delta);
+            updateCamera(delta);
+            updateAudio(delta, prevCoins, prevNitro);
+            draw();
+        } catch (Exception e) {
+            Gdx.app.error("GameScreen", "Error in render: " + e.getMessage(), e);
+        }
     }
 
     private void handleInput() {
@@ -131,9 +156,9 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void updateAudio(float delta, int prevCoins, boolean prevNitro) {
+        SoundGenerator soundGen = game.getSoundGenerator();
         if (soundGen == null) return;
 
-        // Coin collected
         if (gameWorld.getCoinsCollected() > prevCoins) {
             float pitch = 1f + (gameWorld.getCoinsCollected() % 8) * 0.05f;
             if (soundGen.get("coin") != null) {
@@ -141,14 +166,12 @@ public class GameScreen extends ScreenAdapter {
             }
         }
 
-        // Nitro activated
         if (gameWorld.isNitroActive() && !prevNitro) {
             if (soundGen.get("nitro") != null) {
                 soundGen.get("nitro").play(0.6f);
             }
         }
 
-        // Flip warning
         flipWarningCooldown -= delta;
         if (gameWorld.getFlipTimer() > 0.3f && flipWarningCooldown <= 0) {
             if (soundGen.get("flip_warning") != null) {
@@ -180,6 +203,7 @@ public class GameScreen extends ScreenAdapter {
 
     private void onGameOver() {
         gameEnded = true;
+        SoundGenerator soundGen = game.getSoundGenerator();
         if (soundGen != null && soundGen.get("crash") != null) {
             soundGen.get("crash").play(0.7f);
         }
@@ -194,6 +218,7 @@ public class GameScreen extends ScreenAdapter {
 
     private void onLevelComplete() {
         gameEnded = true;
+        SoundGenerator soundGen = game.getSoundGenerator();
         if (soundGen != null && soundGen.get("star") != null) {
             soundGen.get("star").play(0.6f);
         }
@@ -208,7 +233,7 @@ public class GameScreen extends ScreenAdapter {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, false);
-        hud.resize(width, height);
+        if (hud != null) hud.resize(width, height);
     }
 
     @Override
@@ -226,6 +251,5 @@ public class GameScreen extends ScreenAdapter {
         if (gameWorld != null) gameWorld.dispose();
         if (hud != null) hud.dispose();
         if (assets != null) assets.dispose();
-        if (soundGen != null) soundGen.dispose();
     }
 }
