@@ -23,3 +23,6 @@ music_*.wav
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated
+/tmp/icongen/
