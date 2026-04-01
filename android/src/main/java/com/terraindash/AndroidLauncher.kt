@@ -1,72 +1,114 @@
 package com.terraindash
 
+import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
-import com.badlogic.gdx.backends.android.AndroidApplication
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
+import android.util.TypedValue
+import android.view.Gravity
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 
-class AndroidLauncher : AndroidApplication() {
+class AndroidLauncher : Activity() {
+
+    private lateinit var logView: TextView
+    private val logLines = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
-            Log.e("TD", "Uncaught exception", throwable)
-            showCrash(throwable)
+        Thread.setDefaultUncaughtExceptionHandler { _, t ->
+            Log.e("TD", "Uncaught", t)
+            appendLog("UNCAUGHT: $t")
+            t.stackTrace.take(10).forEach { appendLog("  $it") }
+        }
+
+        appendLog("=== Terrain Dash Debug ===")
+        appendLog("Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
+        appendLog("Android: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})")
+        appendLog("")
+
+        // Check if LibGDX native libs exist
+        try {
+            System.loadLibrary("gdx")
+            appendLog("libgdx.so: OK")
+        } catch (t: Throwable) {
+            appendLog("libgdx.so FAIL: $t")
         }
 
         try {
-            Log.i("TD", "=== AndroidLauncher.onCreate() ===")
-            Log.i("TD", "Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
-            Log.i("TD", "Android: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})")
-
-            val config = AndroidApplicationConfiguration().apply {
-                useAccelerometer = false
-                useCompass = false
-                useImmersiveMode = true
-                numSamples = 0
-                useGL30 = false
-                r = 8; g = 8; b = 8; a = 8
-                depth = 16; stencil = 0
-            }
-
-            Log.i("TD", "Calling initialize()...")
-            initialize(TerrainDashGame(), config)
-            Log.i("TD", "initialize() OK")
+            System.loadLibrary("gdx-box2d")
+            appendLog("libgdx-box2d.so: OK")
         } catch (t: Throwable) {
-            Log.e("TD", "CRASH in onCreate", t)
-            showCrash(t)
+            appendLog("libgdx-box2d.so FAIL: $t")
+        }
+
+        appendLog("")
+        appendLog("Tap START to launch the game.")
+        appendLog("If it crashes, the error will show here.")
+
+        // Build UI
+        logView = TextView(this).apply {
+            text = logLines.joinToString("\n")
+            setTextColor(Color.WHITE)
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            typeface = Typeface.MONOSPACE
+            setPadding(24, 24, 24, 24)
+            setTextIsSelectable(true)
+        }
+
+        val startBtn = Button(this).apply {
+            text = "START GAME"
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
+            setBackgroundColor(Color.parseColor("#2255aa"))
+            setTextColor(Color.WHITE)
+            setPadding(40, 24, 40, 24)
+            setOnClickListener { launchGame() }
+        }
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Color.parseColor("#0a0a1a"))
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(0, 48, 0, 0)
+        }
+
+        layout.addView(startBtn, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { bottomMargin = 32 })
+
+        val scroll = ScrollView(this).apply { addView(logView) }
+        layout.addView(scroll, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.MATCH_PARENT
+        ))
+
+        setContentView(layout)
+    }
+
+    private fun launchGame() {
+        appendLog("")
+        appendLog("Launching LibGDX...")
+
+        try {
+            val intent = Intent(this, GameActivity::class.java)
+            startActivity(intent)
+        } catch (t: Throwable) {
+            appendLog("LAUNCH FAIL: $t")
+            t.stackTrace.take(10).forEach { appendLog("  $it") }
         }
     }
 
-    private fun showCrash(t: Throwable) {
-        try {
-            val sb = StringBuilder()
-            sb.appendLine("Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
-            sb.appendLine("Android: ${android.os.Build.VERSION.RELEASE} (API ${android.os.Build.VERSION.SDK_INT})")
-            sb.appendLine()
-            sb.appendLine(t.toString())
-            sb.appendLine()
-            for (el in t.stackTrace.take(30)) {
-                sb.appendLine("  at $el")
-            }
-            var cause = t.cause
-            while (cause != null) {
-                sb.appendLine()
-                sb.appendLine("Caused by: $cause")
-                for (el in cause.stackTrace.take(15)) {
-                    sb.appendLine("  at $el")
-                }
-                cause = cause.cause
-            }
-
-            val intent = Intent(this, CrashActivity::class.java)
-            intent.putExtra("crash_log", sb.toString())
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            startActivity(intent)
-        } catch (e: Exception) {
-            Log.e("TD", "Could not show crash activity", e)
+    private fun appendLog(msg: String) {
+        Log.i("TD", msg)
+        logLines.add(msg)
+        if (::logView.isInitialized) {
+            runOnUiThread { logView.text = logLines.joinToString("\n") }
         }
     }
 }
