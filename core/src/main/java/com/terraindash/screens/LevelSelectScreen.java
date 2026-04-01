@@ -5,83 +5,69 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.terraindash.RealGame;
 import com.terraindash.ui.SkinFactory;
 
 public class LevelSelectScreen extends ScreenAdapter {
 
     private final RealGame game;
-    private final String worldId;
-    private final String worldName;
+    private final String worldId, worldName;
     private Stage stage;
 
     public LevelSelectScreen(RealGame game, String worldId, String worldName) {
-        this.game = game;
-        this.worldId = worldId;
-        this.worldName = worldName;
+        this.game = game; this.worldId = worldId; this.worldName = worldName;
     }
 
     @Override
     public void show() {
-        stage = new Stage(new ScreenViewport());
+        stage = new Stage(new ExtendViewport(800, 480));
         Gdx.input.setInputProcessor(stage);
         Skin skin = SkinFactory.create();
-        float d = Math.max(1f, Gdx.graphics.getDensity());
 
         Table root = new Table();
         root.setFillParent(true);
+        root.center();
         stage.addActor(root);
 
-        root.add(new Label(worldName.toUpperCase(), skin, "title")).colspan(3).padBottom(40 * d).row();
+        root.add(new Label(worldName.toUpperCase(), skin, "title")).padBottom(30).colspan(5).row();
 
-        Table grid = new Table();
         for (int i = 0; i < 5; i++) {
-            final int levelIndex = i;
+            final int idx = i;
             int stars = game.getSaveManager().getLevelStars(worldId, i);
-            StringBuilder label = new StringBuilder("Level " + (i + 1));
-            for (int s = 0; s < stars; s++) label.append(" *");
+            String label = String.valueOf(i + 1);
+            if (stars > 0) { StringBuilder sb = new StringBuilder(label); for (int s = 0; s < stars; s++) sb.append("*"); label = sb.toString(); }
 
-            TextButton btn = new TextButton(label.toString(), skin);
+            TextButton btn = new TextButton(label, skin);
             btn.addListener(new ClickListener() {
                 @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    game.setScreen(new GameScreen(game, worldId, levelIndex));
+                public void clicked(InputEvent e, float x, float y) {
+                    game.setScreen(new GameScreen(game, worldId, idx));
                 }
             });
-            grid.add(btn).width(340 * d).height(80 * d).pad(10 * d);
-            if ((i + 1) % 3 == 0) grid.row();
+            root.add(btn).width(120).height(80).pad(8);
         }
-        root.add(grid).colspan(3).row();
+        root.row();
 
-        TextButton backBtn = new TextButton("BACK", skin);
-        backBtn.addListener(new ClickListener() {
+        TextButton back = new TextButton("BACK", skin);
+        back.addListener(new ClickListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new WorldSelectScreen(game));
-            }
+            public void clicked(InputEvent e, float x, float y) { game.setScreen(new WorldSelectScreen(game)); }
         });
-        root.add(backBtn).colspan(3).width(260 * d).height(70 * d).padTop(30 * d);
+        root.add(back).colspan(5).width(200).height(48).padTop(30);
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.06f, 0.08f, 0.16f, 1f);
+        Gdx.gl.glClearColor(0.05f, 0.06f, 0.13f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        stage.act(delta);
-        stage.draw();
+        stage.act(delta); stage.draw();
     }
 
     @Override
-    public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
-    }
-
+    public void resize(int w, int h) { stage.getViewport().update(w, h, true); }
     @Override
     public void dispose() { if (stage != null) stage.dispose(); }
 }
