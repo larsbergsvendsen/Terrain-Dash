@@ -10,7 +10,8 @@ import com.terraindash.utils.Constants;
 
 /**
  * Factory and utility methods for creating and controlling
- * the vehicle's Box2D bodies and joints.
+ * the vehicle's Box2D bodies and joints. Includes speed limiting,
+ * angular damping, and air-control tuning for good game feel.
  */
 public class VehiclePhysics {
 
@@ -28,9 +29,13 @@ public class VehiclePhysics {
             config);
 
         WheelJoint jointRear = createWheelJoint(world, chassis, wheelRear,
-            new Vector2(-config.wheelBase / 2f, -config.chassisHeight), config);
+            new Vector2(-config.wheelBase / 2f, -config.chassisHeight), config, true);
         WheelJoint jointFront = createWheelJoint(world, chassis, wheelFront,
-            new Vector2(config.wheelBase / 2f, -config.chassisHeight), config);
+            new Vector2(config.wheelBase / 2f, -config.chassisHeight), config, false);
+
+        chassis.setUserData("vehicle");
+        wheelFront.setUserData("vehicle");
+        wheelRear.setUserData("vehicle");
 
         return new Vehicle(chassis, wheelFront, wheelRear, jointFront, jointRear, config);
     }
@@ -39,19 +44,31 @@ public class VehiclePhysics {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(position);
+        bodyDef.angularDamping = 1.5f;
 
         Body body = world.createBody(bodyDef);
 
+        float hw = config.chassisWidth / 2f;
+        float hh = config.chassisHeight / 2f;
+
         PolygonShape shape = new PolygonShape();
-        shape.setAsBox(config.chassisWidth / 2f, config.chassisHeight / 2f);
+        shape.set(new float[]{
+            -hw, -hh,
+             hw * 0.9f, -hh,
+             hw, -hh * 0.3f,
+             hw * 0.7f, hh,
+            -hw * 0.4f, hh,
+            -hw, hh * 0.5f
+        });
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = config.chassisDensity;
-        fixtureDef.friction = 0.3f;
-        fixtureDef.restitution = 0.1f;
+        fixtureDef.friction = 0.4f;
+        fixtureDef.restitution = 0.05f;
         fixtureDef.filter.categoryBits = Constants.CATEGORY_VEHICLE;
-        fixtureDef.filter.maskBits = Constants.CATEGORY_TERRAIN | Constants.CATEGORY_OBSTACLE;
+        fixtureDef.filter.maskBits = (short) (Constants.CATEGORY_TERRAIN | Constants.CATEGORY_OBSTACLE
+            | Constants.CATEGORY_COIN | Constants.CATEGORY_BOOST | Constants.CATEGORY_SENSOR);
 
         body.createFixture(fixtureDef);
         shape.dispose();
@@ -63,6 +80,7 @@ public class VehiclePhysics {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(position);
+        bodyDef.angularDamping = 0.3f;
 
         Body body = world.createBody(bodyDef);
 
@@ -73,7 +91,7 @@ public class VehiclePhysics {
         fixtureDef.shape = shape;
         fixtureDef.density = config.wheelDensity;
         fixtureDef.friction = config.getWheelFriction();
-        fixtureDef.restitution = 0.05f;
+        fixtureDef.restitution = 0.1f;
         fixtureDef.filter.categoryBits = Constants.CATEGORY_VEHICLE;
         fixtureDef.filter.maskBits = Constants.CATEGORY_TERRAIN;
 
@@ -84,41 +102,84 @@ public class VehiclePhysics {
     }
 
     private static WheelJoint createWheelJoint(World world, Body chassis, Body wheel,
-                                                Vector2 localAnchor, VehicleConfig config) {
+                                                Vector2 localAnchor, VehicleConfig config,
+                                                boolean isDriveWheel) {
         WheelJointDef jointDef = new WheelJointDef();
         jointDef.initialize(chassis, wheel, wheel.getWorldCenter(), new Vector2(0, 1));
         jointDef.localAnchorA.set(localAnchor);
         jointDef.frequencyHz = config.getSuspensionFreq();
         jointDef.dampingRatio = config.getSuspensionDamp();
-        jointDef.enableMotor = true;
+        jointDef.enableMotor = isDriveWheel;
         jointDef.motorSpeed = 0f;
-        jointDef.maxMotorTorque = config.getMotorTorque();
+        jointDef.maxMotorTorque = isDriveWheel ? config.getMotorTorque() : 0f;
 
         return (WheelJoint) world.createJoint(jointDef);
     }
 
-    /** Apply constant forward motor torque to rear wheel */
+    /** Apply motor force with smooth speed limiting */
     public static void applyMotorForce(Vehicle vehicle) {
-        float targetSpeed = -vehicle.getConfig().getMaxSpeed();
+        float currentSpeed = vehicle.getHorizontalSpeed();
+        float maxSpeed = vehicle.getConfig().getMaxSpeed();
+
+        float speedRatio = Math.abs(currentSpeed) / maxSpeed;
+        float torqueScale = 1f;
+        if (speedRatio > 0.8f) {
+            torqueScale = Math.max(0f, 1f - (speedRatio - 0.8f) * 5f);
+        }
+
+        float targetSpeed = -maxSpeed;
         vehicle.getJointRear().setMotorSpeed(targetSpeed);
-        vehicle.getJointRear().setMaxMotorTorque(vehicle.getConfig().getMotorTorque());
+        vehicle.getJointRear().setMaxMotorTorque(vehicle.getConfig().getMotorTorque() * torqueScale);
     }
 
-    /** Apply rotational torque to chassis based on player tilt input [-1, 1] */
+    /** Apply rotational torque based on player tilt, with air-control bonus */
     public static void applyTiltTorque(Vehicle vehicle, float tiltInput) {
         if (tiltInput == 0f) return;
+
         float torque = tiltInput * vehicle.getConfig().getTiltStrength();
+
+        boolean inAir = isInAir(vehicle);
+        if (inAir) {
+            torque *= 1.5f;
+        }
+
         vehicle.getChassis().applyTorque(torque, true);
     }
 
-    /** Apply nitro boost as an impulse in the forward direction */
+    /** Apply nitro boost force in the forward direction */
     public static void applyNitroBoost(Vehicle vehicle) {
-        float boostForce = vehicle.getConfig().getNitroMultiplier() * 5f;
+        float boostForce = vehicle.getConfig().getNitroMultiplier() * 8f;
         float angle = vehicle.getChassis().getAngle();
         Vector2 force = new Vector2(
             (float) Math.cos(angle) * boostForce,
             (float) Math.sin(angle) * boostForce
         );
         vehicle.getChassis().applyForceToCenter(force, true);
+    }
+
+    /** Check if the vehicle is airborne (no wheel contacts) */
+    public static boolean isInAir(Vehicle vehicle) {
+        return !hasContact(vehicle.getWheelFront()) && !hasContact(vehicle.getWheelRear());
+    }
+
+    private static boolean hasContact(Body wheel) {
+        for (int i = 0; i < wheel.getFixtureList().size; i++) {
+            // Check contacts via contact edge list
+        }
+        return wheel.getContactList().size > 0;
+    }
+
+    /** Compute landing impact force from vertical velocity */
+    public static float getLandingImpact(Vehicle vehicle) {
+        float vy = vehicle.getLinearVelocity().y;
+        return Math.max(0, -vy);
+    }
+
+    /** Apply angular velocity damping when grounded for stability */
+    public static void applyGroundedStabilization(Vehicle vehicle) {
+        if (!isInAir(vehicle)) {
+            float angularVel = vehicle.getChassis().getAngularVelocity();
+            vehicle.getChassis().setAngularVelocity(angularVel * 0.95f);
+        }
     }
 }

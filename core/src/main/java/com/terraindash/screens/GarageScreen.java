@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.terraindash.TerrainDashGame;
-import com.terraindash.entities.VehicleConfig;
+import com.terraindash.ui.SkinFactory;
 
 public class GarageScreen extends ScreenAdapter {
 
@@ -46,7 +46,7 @@ public class GarageScreen extends ScreenAdapter {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        skin = new Skin(Gdx.files.internal("ui/default-skin.json"));
+        skin = SkinFactory.create();
         buildUI();
     }
 
@@ -65,7 +65,6 @@ public class GarageScreen extends ScreenAdapter {
         String vehicleName = VEHICLES[selectedVehicleIndex][1];
         boolean unlocked = game.getSaveManager().isVehicleUnlocked(vehicleId);
 
-        // Vehicle navigation
         TextButton prevBtn = new TextButton("<", skin);
         prevBtn.addListener(new ClickListener() {
             @Override
@@ -90,14 +89,13 @@ public class GarageScreen extends ScreenAdapter {
         root.row().padTop(20);
 
         if (unlocked) {
-            // Upgrade buttons
             for (String upgrade : UPGRADES) {
                 int level = game.getSaveManager().getUpgradeLevel(vehicleId, upgrade);
                 String label = capitalize(upgrade) + " Lv." + level;
 
                 if (level < 10) {
                     int cost = UPGRADE_COSTS[level];
-                    label += " → " + cost + " coins";
+                    label += " -> " + cost + " coins";
                 } else {
                     label += " MAX";
                 }
@@ -136,7 +134,7 @@ public class GarageScreen extends ScreenAdapter {
                 });
                 root.add(selectBtn).colspan(3).width(200).height(60).padTop(15).row();
             } else {
-                root.add(new Label("SELECTED", skin)).colspan(3).padTop(15).row();
+                root.add(new Label("[ SELECTED ]", skin)).colspan(3).padTop(15).row();
             }
         }
 
@@ -156,7 +154,7 @@ public class GarageScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.12f, 0.12f, 0.18f, 1f);
+        Gdx.gl.glClearColor(0.08f, 0.08f, 0.14f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();
@@ -170,6 +168,5 @@ public class GarageScreen extends ScreenAdapter {
     @Override
     public void dispose() {
         if (stage != null) stage.dispose();
-        if (skin != null) skin.dispose();
     }
 }

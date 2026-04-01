@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.terraindash.TerrainDashGame;
+import com.terraindash.ui.SkinFactory;
 
 public class LevelSelectScreen extends ScreenAdapter {
 
@@ -33,7 +34,7 @@ public class LevelSelectScreen extends ScreenAdapter {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        skin = new Skin(Gdx.files.internal("ui/default-skin.json"));
+        skin = SkinFactory.create();
 
         Table root = new Table();
         root.setFillParent(true);
@@ -46,10 +47,10 @@ public class LevelSelectScreen extends ScreenAdapter {
             final int levelIndex = i;
             int stars = game.getSaveManager().getLevelStars(worldId, i);
 
-            String label = "Level " + (i + 1);
-            if (stars > 0) label += " ★".repeat(stars);
+            StringBuilder label = new StringBuilder("Level " + (i + 1));
+            for (int s = 0; s < stars; s++) label.append(" *");
 
-            TextButton btn = new TextButton(label, skin);
+            TextButton btn = new TextButton(label.toString(), skin);
             btn.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -74,7 +75,7 @@ public class LevelSelectScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.1f, 0.15f, 0.25f, 1f);
+        Gdx.gl.glClearColor(0.08f, 0.1f, 0.2f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();
@@ -88,6 +89,5 @@ public class LevelSelectScreen extends ScreenAdapter {
     @Override
     public void dispose() {
         if (stage != null) stage.dispose();
-        if (skin != null) skin.dispose();
     }
 }

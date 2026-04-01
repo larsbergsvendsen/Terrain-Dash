@@ -2,7 +2,6 @@ package com.terraindash.world;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.utils.Array;
 import com.terraindash.utils.Constants;
 
 import java.util.ArrayList;
@@ -139,6 +138,11 @@ public class TerrainGenerator {
             case "sky":         return Constants.FRICTION_ASPHALT;
             default:            return Constants.FRICTION_GRASS;
         }
+    }
+
+    /** Get terrain height at any x position using the deterministic height function */
+    public float getHeightAt(float x) {
+        return computeTerrainHeight(x);
     }
 
     public List<TerrainChunk> getActiveChunks() {

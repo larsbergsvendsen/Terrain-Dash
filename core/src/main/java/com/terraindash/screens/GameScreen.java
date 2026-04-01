@@ -8,8 +8,10 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.terraindash.TerrainDashGame;
+import com.terraindash.audio.SoundGenerator;
 import com.terraindash.effects.CameraController;
 import com.terraindash.ui.HUD;
+import com.terraindash.utils.AssetGenerator;
 import com.terraindash.utils.Constants;
 import com.terraindash.world.GameWorld;
 
@@ -24,9 +26,17 @@ public class GameScreen extends ScreenAdapter {
     private GameWorld gameWorld;
     private CameraController cameraController;
     private HUD hud;
+    private AssetGenerator assets;
+    private SoundGenerator soundGen;
 
     private float accumulator = 0f;
     private boolean paused = false;
+    private boolean gameEnded = false;
+
+    // Sound state
+    private float engineSoundTimer = 0f;
+    private boolean wasNitro = false;
+    private float flipWarningCooldown = 0f;
 
     public GameScreen(TerrainDashGame game, String worldId, int levelIndex) {
         this.game = game;
@@ -38,33 +48,46 @@ public class GameScreen extends ScreenAdapter {
     public void show() {
         camera = new OrthographicCamera();
         viewport = new FitViewport(Constants.VIEWPORT_WIDTH, Constants.VIEWPORT_HEIGHT, camera);
+        viewport.apply(true);
 
-        gameWorld = new GameWorld(worldId, levelIndex);
+        assets = new AssetGenerator();
+        assets.generateAll();
+
+        soundGen = new SoundGenerator();
+        soundGen.generateAll();
+
+        gameWorld = new GameWorld(worldId, levelIndex, assets);
         cameraController = new CameraController(camera);
         hud = new HUD(game.getBatch());
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(hud.getStage());
-        multiplexer.addProcessor(gameWorld.getInputProcessor());
         Gdx.input.setInputProcessor(multiplexer);
+
+        // Play world music
+        game.getMusicManager().play(worldId);
     }
 
     @Override
     public void render(float delta) {
-        if (paused) return;
+        if (paused || gameEnded) return;
 
         delta = Math.min(delta, 0.05f);
+
+        int prevCoins = gameWorld.getCoinsCollected();
+        boolean prevNitro = gameWorld.isNitroActive();
 
         handleInput();
         updatePhysics(delta);
         updateLogic(delta);
         updateCamera(delta);
+        updateAudio(delta, prevCoins, prevNitro);
         draw();
     }
 
     private void handleInput() {
-        float touchX = -1;
         boolean touching = Gdx.input.isTouched();
+        float touchX = -1;
 
         if (touching) {
             touchX = (float) Gdx.input.getX() / Gdx.graphics.getWidth();
@@ -101,16 +124,44 @@ public class GameScreen extends ScreenAdapter {
         );
     }
 
+    private void updateAudio(float delta, int prevCoins, boolean prevNitro) {
+        if (soundGen == null) return;
+
+        // Coin collected
+        if (gameWorld.getCoinsCollected() > prevCoins) {
+            float pitch = 1f + (gameWorld.getCoinsCollected() % 8) * 0.05f;
+            if (soundGen.get("coin") != null) {
+                soundGen.get("coin").play(0.5f, pitch, 0f);
+            }
+        }
+
+        // Nitro activated
+        if (gameWorld.isNitroActive() && !prevNitro) {
+            if (soundGen.get("nitro") != null) {
+                soundGen.get("nitro").play(0.6f);
+            }
+        }
+
+        // Flip warning
+        flipWarningCooldown -= delta;
+        if (gameWorld.getFlipTimer() > 0.3f && flipWarningCooldown <= 0) {
+            if (soundGen.get("flip_warning") != null) {
+                soundGen.get("flip_warning").play(0.4f);
+            }
+            flipWarningCooldown = 0.5f;
+        }
+    }
+
     private void draw() {
         Gdx.gl.glClearColor(0.4f, 0.7f, 0.9f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        viewport.apply(false);
+
         SpriteBatch batch = game.getBatch();
         batch.setProjectionMatrix(camera.combined);
 
-        batch.begin();
-        gameWorld.render(batch);
-        batch.end();
+        gameWorld.render(batch, camera);
 
         hud.render(
             gameWorld.getSpeed(),
@@ -122,17 +173,30 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void onGameOver() {
-        game.setScreen(new ResultScreen(game, worldId, levelIndex, false,
-            gameWorld.getCoinsCollected(),
-            gameWorld.getDistanceTraveled(),
-            gameWorld.getElapsedTime()));
+        gameEnded = true;
+        if (soundGen != null && soundGen.get("crash") != null) {
+            soundGen.get("crash").play(0.7f);
+        }
+        cameraController.shake(0.5f, 0.5f);
+        Gdx.app.postRunnable(() -> {
+            game.setScreen(new ResultScreen(game, worldId, levelIndex, false,
+                gameWorld.getCoinsCollected(),
+                gameWorld.getDistanceTraveled(),
+                gameWorld.getElapsedTime()));
+        });
     }
 
     private void onLevelComplete() {
-        game.setScreen(new ResultScreen(game, worldId, levelIndex, true,
-            gameWorld.getCoinsCollected(),
-            gameWorld.getDistanceTraveled(),
-            gameWorld.getElapsedTime()));
+        gameEnded = true;
+        if (soundGen != null && soundGen.get("star") != null) {
+            soundGen.get("star").play(0.6f);
+        }
+        Gdx.app.postRunnable(() -> {
+            game.setScreen(new ResultScreen(game, worldId, levelIndex, true,
+                gameWorld.getCoinsCollected(),
+                gameWorld.getDistanceTraveled(),
+                gameWorld.getElapsedTime()));
+        });
     }
 
     @Override
@@ -155,5 +219,7 @@ public class GameScreen extends ScreenAdapter {
     public void dispose() {
         if (gameWorld != null) gameWorld.dispose();
         if (hud != null) hud.dispose();
+        if (assets != null) assets.dispose();
+        if (soundGen != null) soundGen.dispose();
     }
 }

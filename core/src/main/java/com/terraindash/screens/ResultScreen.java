@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.terraindash.TerrainDashGame;
+import com.terraindash.ui.SkinFactory;
 
 public class ResultScreen extends ScreenAdapter {
 
@@ -39,16 +40,20 @@ public class ResultScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        // Save progress
         game.getSaveManager().addCoins(coinsCollected);
         if (completed) {
             game.getSaveManager().setLevelBestTime(worldId, levelIndex, time);
             game.getSaveManager().addPlayerXP(100 + coinsCollected * 2);
+
+            int stars = 1;
+            if (coinsCollected >= 15) stars = 2;
+            if (coinsCollected >= 20 && time < 60) stars = 3;
+            game.getSaveManager().setLevelStars(worldId, levelIndex, stars);
         }
 
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        skin = new Skin(Gdx.files.internal("ui/default-skin.json"));
+        skin = SkinFactory.create();
 
         Table root = new Table();
         root.setFillParent(true);
@@ -64,6 +69,11 @@ public class ResultScreen extends ScreenAdapter {
             int minutes = (int) (time / 60);
             int seconds = (int) (time % 60);
             root.add(new Label(String.format("Time: %d:%02d", minutes, seconds), skin)).padBottom(10).row();
+
+            int stars = game.getSaveManager().getLevelStars(worldId, levelIndex);
+            StringBuilder starText = new StringBuilder();
+            for (int i = 0; i < 3; i++) starText.append(i < stars ? "* " : "- ");
+            root.add(new Label(starText.toString().trim(), skin)).padBottom(10).row();
         }
 
         root.add().height(30).row();
@@ -77,7 +87,7 @@ public class ResultScreen extends ScreenAdapter {
         });
         root.add(retryBtn).width(250).height(70).padBottom(15).row();
 
-        if (completed) {
+        if (completed && levelIndex < 4) {
             TextButton nextBtn = new TextButton("NEXT LEVEL", skin);
             nextBtn.addListener(new ClickListener() {
                 @Override
@@ -100,9 +110,9 @@ public class ResultScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        float r = completed ? 0.1f : 0.2f;
-        float g = completed ? 0.2f : 0.05f;
-        Gdx.gl.glClearColor(r, g, 0.15f, 1f);
+        float r = completed ? 0.05f : 0.15f;
+        float g = completed ? 0.12f : 0.04f;
+        Gdx.gl.glClearColor(r, g, 0.1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();
@@ -116,6 +126,5 @@ public class ResultScreen extends ScreenAdapter {
     @Override
     public void dispose() {
         if (stage != null) stage.dispose();
-        if (skin != null) skin.dispose();
     }
 }

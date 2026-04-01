@@ -27,6 +27,12 @@ public class MusicManager implements Disposable {
         tracks.put(id, music);
     }
 
+    /** Load a pre-generated Music object (from MusicGenerator) */
+    public void loadGenerated(String id, Music music) {
+        music.setLooping(true);
+        tracks.put(id, music);
+    }
+
     public void play(String id) {
         if (id.equals(currentTrackId)) return;
 
