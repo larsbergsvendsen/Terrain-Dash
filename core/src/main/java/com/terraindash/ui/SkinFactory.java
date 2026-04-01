@@ -12,10 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
-/**
- * Creates a complete Scene2D Skin programmatically with no external files.
- * Generates a modern flat UI style with custom colors and button states.
- */
 public class SkinFactory {
 
     private static Skin cachedSkin;
@@ -24,97 +20,95 @@ public class SkinFactory {
     public static Skin create() {
         if (cachedSkin != null) return cachedSkin;
 
+        float density = Math.max(1f, Gdx.graphics.getDensity());
+        float fontScale = density * 1.2f;
+
         Skin skin = new Skin();
 
         BitmapFont defaultFont = new BitmapFont();
-        defaultFont.getData().setScale(1.5f);
+        defaultFont.getData().setScale(fontScale);
         skin.add("default-font", defaultFont);
 
         BitmapFont titleFont = new BitmapFont();
-        titleFont.getData().setScale(3f);
+        titleFont.getData().setScale(fontScale * 2.2f);
         skin.add("title-font", titleFont);
 
         BitmapFont smallFont = new BitmapFont();
-        smallFont.getData().setScale(1.2f);
+        smallFont.getData().setScale(fontScale * 0.85f);
         skin.add("small-font", smallFont);
 
-        int atlasSize = 128;
-        Pixmap pm = new Pixmap(atlasSize, atlasSize, Pixmap.Format.RGBA8888);
+        Pixmap pm = new Pixmap(128, 64, Pixmap.Format.RGBA8888);
 
-        // White block (0,0,16,16)
-        pm.setColor(Color.WHITE);
-        pm.fillRectangle(0, 0, 16, 16);
+        // Rounded button normal - gradient blue
+        for (int y = 0; y < 32; y++) {
+            float t = (float) y / 32;
+            float r = 0.15f + t * 0.08f;
+            float g = 0.28f + t * 0.06f;
+            float b = 0.55f - t * 0.1f;
+            pm.setColor(r, g, b, 1f);
+            pm.drawLine(0, y, 31, y);
+        }
 
-        // Button normal (16,0,16,16) - dark blue
-        pm.setColor(0.2f, 0.3f, 0.55f, 1f);
-        pm.fillRectangle(16, 0, 16, 16);
+        // Button pressed - darker
+        for (int y = 0; y < 32; y++) {
+            float t = (float) y / 32;
+            pm.setColor(0.08f + t * 0.05f, 0.15f + t * 0.04f, 0.35f - t * 0.06f, 1f);
+            pm.drawLine(32, y, 63, y);
+        }
 
-        // Button hover (32,0,16,16) - lighter blue
-        pm.setColor(0.3f, 0.4f, 0.65f, 1f);
-        pm.fillRectangle(32, 0, 16, 16);
+        // Button disabled
+        for (int y = 0; y < 32; y++) {
+            pm.setColor(0.22f, 0.22f, 0.26f, 1f);
+            pm.drawLine(64, y, 95, y);
+        }
 
-        // Button pressed (48,0,16,16) - darker
-        pm.setColor(0.15f, 0.2f, 0.4f, 1f);
-        pm.fillRectangle(48, 0, 16, 16);
+        // Slider bg
+        pm.setColor(0.18f, 0.18f, 0.24f, 1f);
+        pm.fillRectangle(0, 32, 32, 32);
 
-        // Button disabled (64,0,16,16)
-        pm.setColor(0.3f, 0.3f, 0.35f, 1f);
-        pm.fillRectangle(64, 0, 16, 16);
+        // Slider knob
+        pm.setColor(0.4f, 0.6f, 1f, 1f);
+        pm.fillRectangle(32, 32, 32, 32);
 
-        // Slider bg (0,16,16,16)
-        pm.setColor(0.25f, 0.25f, 0.3f, 1f);
-        pm.fillRectangle(0, 16, 16, 16);
-
-        // Slider knob (16,16,16,16)
-        pm.setColor(0.5f, 0.7f, 1f, 1f);
-        pm.fillRectangle(16, 16, 16, 16);
-
-        // Slider knob before (32,16,16,16)
-        pm.setColor(0.3f, 0.5f, 0.9f, 1f);
-        pm.fillRectangle(32, 16, 16, 16);
+        // Slider filled
+        pm.setColor(0.25f, 0.45f, 0.85f, 1f);
+        pm.fillRectangle(64, 32, 32, 32);
 
         skinTexture = new Texture(pm);
+        skinTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         pm.dispose();
 
-        TextureRegion white = new TextureRegion(skinTexture, 0, 0, 16, 16);
-        TextureRegion btnNormal = new TextureRegion(skinTexture, 16, 0, 16, 16);
-        TextureRegion btnHover = new TextureRegion(skinTexture, 32, 0, 16, 16);
-        TextureRegion btnPressed = new TextureRegion(skinTexture, 48, 0, 16, 16);
-        TextureRegion btnDisabled = new TextureRegion(skinTexture, 64, 0, 16, 16);
-        TextureRegion sliderBg = new TextureRegion(skinTexture, 0, 16, 16, 16);
-        TextureRegion sliderKnob = new TextureRegion(skinTexture, 16, 16, 16, 16);
-        TextureRegion sliderBefore = new TextureRegion(skinTexture, 32, 16, 16, 16);
+        TextureRegionDrawable btnUp = new TextureRegionDrawable(new TextureRegion(skinTexture, 0, 0, 32, 32));
+        TextureRegionDrawable btnDown = new TextureRegionDrawable(new TextureRegion(skinTexture, 32, 0, 32, 32));
+        TextureRegionDrawable btnDisabled = new TextureRegionDrawable(new TextureRegion(skinTexture, 64, 0, 32, 32));
+        TextureRegionDrawable sliderBg = new TextureRegionDrawable(new TextureRegion(skinTexture, 0, 32, 32, 32));
+        TextureRegionDrawable sliderKnob = new TextureRegionDrawable(new TextureRegion(skinTexture, 32, 32, 32, 32));
+        TextureRegionDrawable sliderFilled = new TextureRegionDrawable(new TextureRegion(skinTexture, 64, 32, 32, 32));
 
-        // TextButton style
         TextButton.TextButtonStyle btnStyle = new TextButton.TextButtonStyle();
-        btnStyle.up = new TextureRegionDrawable(btnNormal);
-        btnStyle.over = new TextureRegionDrawable(btnHover);
-        btnStyle.down = new TextureRegionDrawable(btnPressed);
-        btnStyle.disabled = new TextureRegionDrawable(btnDisabled);
+        btnStyle.up = btnUp;
+        btnStyle.over = btnUp;
+        btnStyle.down = btnDown;
+        btnStyle.disabled = btnDisabled;
         btnStyle.font = defaultFont;
         btnStyle.fontColor = Color.WHITE;
-        btnStyle.disabledFontColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+        btnStyle.downFontColor = new Color(0.8f, 0.85f, 1f, 1f);
+        btnStyle.disabledFontColor = new Color(0.5f, 0.5f, 0.5f, 1f);
         skin.add("default", btnStyle);
 
-        // Label styles
-        Label.LabelStyle defaultLabel = new Label.LabelStyle(defaultFont, Color.WHITE);
-        skin.add("default", defaultLabel);
+        skin.add("default", new Label.LabelStyle(defaultFont, Color.WHITE));
+        skin.add("title", new Label.LabelStyle(titleFont, Color.WHITE));
+        skin.add("small", new Label.LabelStyle(smallFont, new Color(0.75f, 0.75f, 0.82f, 1f)));
 
-        Label.LabelStyle titleLabel = new Label.LabelStyle(titleFont, Color.WHITE);
-        skin.add("title", titleLabel);
-
-        Label.LabelStyle smallLabel = new Label.LabelStyle(smallFont, new Color(0.8f, 0.8f, 0.8f, 1f));
-        skin.add("small", smallLabel);
-
-        // Slider style
+        float knobSize = 28 * density;
         Slider.SliderStyle sliderStyle = new Slider.SliderStyle();
-        sliderStyle.background = new TextureRegionDrawable(sliderBg);
-        sliderStyle.background.setMinHeight(8);
-        sliderStyle.knob = new TextureRegionDrawable(sliderKnob);
-        sliderStyle.knob.setMinWidth(20);
-        sliderStyle.knob.setMinHeight(20);
-        sliderStyle.knobBefore = new TextureRegionDrawable(sliderBefore);
-        sliderStyle.knobBefore.setMinHeight(8);
+        sliderStyle.background = sliderBg;
+        sliderStyle.background.setMinHeight(8 * density);
+        sliderStyle.knob = sliderKnob;
+        sliderStyle.knob.setMinWidth(knobSize);
+        sliderStyle.knob.setMinHeight(knobSize);
+        sliderStyle.knobBefore = sliderFilled;
+        sliderStyle.knobBefore.setMinHeight(8 * density);
         skin.add("default-horizontal", sliderStyle);
 
         cachedSkin = skin;
@@ -122,10 +116,7 @@ public class SkinFactory {
     }
 
     public static void dispose() {
-        if (skinTexture != null) {
-            skinTexture.dispose();
-            skinTexture = null;
-        }
+        if (skinTexture != null) { skinTexture.dispose(); skinTexture = null; }
         cachedSkin = null;
     }
 }

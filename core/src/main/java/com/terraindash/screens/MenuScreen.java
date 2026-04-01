@@ -29,12 +29,16 @@ public class MenuScreen extends ScreenAdapter {
         Gdx.input.setInputProcessor(stage);
 
         Skin skin = SkinFactory.create();
+        float density = Math.max(1f, Gdx.graphics.getDensity());
+        float btnW = 380 * density;
+        float btnH = 90 * density;
+        float pad = 16 * density;
 
         Table root = new Table();
         root.setFillParent(true);
         stage.addActor(root);
 
-        root.add(new Label("TERRAIN DASH", skin, "title")).padBottom(60).row();
+        root.add(new Label("TERRAIN DASH", skin, "title")).padBottom(pad * 4).row();
 
         TextButton playButton = new TextButton("PLAY", skin);
         playButton.addListener(new ClickListener() {
@@ -43,7 +47,7 @@ public class MenuScreen extends ScreenAdapter {
                 game.setScreen(new WorldSelectScreen(game));
             }
         });
-        root.add(playButton).width(300).height(80).padBottom(20).row();
+        root.add(playButton).width(btnW).height(btnH).padBottom(pad).row();
 
         TextButton garageButton = new TextButton("GARAGE", skin);
         garageButton.addListener(new ClickListener() {
@@ -52,7 +56,7 @@ public class MenuScreen extends ScreenAdapter {
                 game.setScreen(new GarageScreen(game));
             }
         });
-        root.add(garageButton).width(300).height(80).padBottom(20).row();
+        root.add(garageButton).width(btnW).height(btnH).padBottom(pad).row();
 
         TextButton settingsButton = new TextButton("SETTINGS", skin);
         settingsButton.addListener(new ClickListener() {
@@ -61,12 +65,12 @@ public class MenuScreen extends ScreenAdapter {
                 game.setScreen(new SettingsScreen(game));
             }
         });
-        root.add(settingsButton).width(300).height(80);
+        root.add(settingsButton).width(btnW).height(btnH);
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.08f, 0.08f, 0.18f, 1f);
+        Gdx.gl.glClearColor(0.06f, 0.06f, 0.14f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();

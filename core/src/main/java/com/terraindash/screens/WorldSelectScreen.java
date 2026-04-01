@@ -27,7 +27,6 @@ public class WorldSelectScreen extends ScreenAdapter {
 
     private final RealGame game;
     private Stage stage;
-    private Skin skin;
 
     public WorldSelectScreen(RealGame game) {
         this.game = game;
@@ -37,13 +36,17 @@ public class WorldSelectScreen extends ScreenAdapter {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        skin = SkinFactory.create();
+        Skin skin = SkinFactory.create();
+        float d = Math.max(1f, Gdx.graphics.getDensity());
+        float btnW = 420 * d;
+        float btnH = 80 * d;
+        float pad = 12 * d;
 
         Table root = new Table();
         root.setFillParent(true);
         stage.addActor(root);
 
-        root.add(new Label("SELECT WORLD", skin, "title")).padBottom(40).row();
+        root.add(new Label("SELECT WORLD", skin, "title")).padBottom(pad * 3).row();
 
         for (int i = 0; i < WORLDS.length; i++) {
             final String worldId = WORLDS[i][0];
@@ -51,7 +54,6 @@ public class WorldSelectScreen extends ScreenAdapter {
 
             TextButton btn = new TextButton(worldName, skin);
             boolean unlocked = game.getSaveManager().getPlayerLevel() > i;
-
             btn.setDisabled(!unlocked);
             if (unlocked) {
                 btn.addListener(new ClickListener() {
@@ -61,8 +63,7 @@ public class WorldSelectScreen extends ScreenAdapter {
                     }
                 });
             }
-
-            root.add(btn).width(350).height(70).padBottom(15).row();
+            root.add(btn).width(btnW).height(btnH).padBottom(pad).row();
         }
 
         TextButton backBtn = new TextButton("BACK", skin);
@@ -72,12 +73,12 @@ public class WorldSelectScreen extends ScreenAdapter {
                 game.setScreen(new MenuScreen(game));
             }
         });
-        root.add(backBtn).width(200).height(60).padTop(30);
+        root.add(backBtn).width(260 * d).height(70 * d).padTop(pad * 2);
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.08f, 0.08f, 0.18f, 1f);
+        Gdx.gl.glClearColor(0.06f, 0.06f, 0.14f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();

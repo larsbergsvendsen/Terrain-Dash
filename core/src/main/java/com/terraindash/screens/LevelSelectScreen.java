@@ -16,13 +16,10 @@ import com.terraindash.ui.SkinFactory;
 
 public class LevelSelectScreen extends ScreenAdapter {
 
-    private static final int LEVELS_PER_WORLD = 5;
-
     private final RealGame game;
     private final String worldId;
     private final String worldName;
     private Stage stage;
-    private Skin skin;
 
     public LevelSelectScreen(RealGame game, String worldId, String worldName) {
         this.game = game;
@@ -34,19 +31,19 @@ public class LevelSelectScreen extends ScreenAdapter {
     public void show() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        skin = SkinFactory.create();
+        Skin skin = SkinFactory.create();
+        float d = Math.max(1f, Gdx.graphics.getDensity());
 
         Table root = new Table();
         root.setFillParent(true);
         stage.addActor(root);
 
-        root.add(new Label(worldName.toUpperCase(), skin, "title")).padBottom(40).row();
+        root.add(new Label(worldName.toUpperCase(), skin, "title")).colspan(3).padBottom(40 * d).row();
 
         Table grid = new Table();
-        for (int i = 0; i < LEVELS_PER_WORLD; i++) {
+        for (int i = 0; i < 5; i++) {
             final int levelIndex = i;
             int stars = game.getSaveManager().getLevelStars(worldId, i);
-
             StringBuilder label = new StringBuilder("Level " + (i + 1));
             for (int s = 0; s < stars; s++) label.append(" *");
 
@@ -57,11 +54,10 @@ public class LevelSelectScreen extends ScreenAdapter {
                     game.setScreen(new GameScreen(game, worldId, levelIndex));
                 }
             });
-
-            grid.add(btn).width(280).height(70).pad(10);
+            grid.add(btn).width(340 * d).height(80 * d).pad(10 * d);
             if ((i + 1) % 3 == 0) grid.row();
         }
-        root.add(grid).row();
+        root.add(grid).colspan(3).row();
 
         TextButton backBtn = new TextButton("BACK", skin);
         backBtn.addListener(new ClickListener() {
@@ -70,12 +66,12 @@ public class LevelSelectScreen extends ScreenAdapter {
                 game.setScreen(new WorldSelectScreen(game));
             }
         });
-        root.add(backBtn).width(200).height(60).padTop(30);
+        root.add(backBtn).colspan(3).width(260 * d).height(70 * d).padTop(30 * d);
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.08f, 0.1f, 0.2f, 1f);
+        Gdx.gl.glClearColor(0.06f, 0.08f, 0.16f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();
@@ -87,7 +83,5 @@ public class LevelSelectScreen extends ScreenAdapter {
     }
 
     @Override
-    public void dispose() {
-        if (stage != null) stage.dispose();
-    }
+    public void dispose() { if (stage != null) stage.dispose(); }
 }

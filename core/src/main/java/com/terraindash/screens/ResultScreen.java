@@ -23,9 +23,7 @@ public class ResultScreen extends ScreenAdapter {
     private final int coinsCollected;
     private final float distance;
     private final float time;
-
     private Stage stage;
-    private Skin skin;
 
     public ResultScreen(RealGame game, String worldId, int levelIndex,
                         boolean completed, int coinsCollected, float distance, float time) {
@@ -44,7 +42,6 @@ public class ResultScreen extends ScreenAdapter {
         if (completed) {
             game.getSaveManager().setLevelBestTime(worldId, levelIndex, time);
             game.getSaveManager().addPlayerXP(100 + coinsCollected * 2);
-
             int stars = 1;
             if (coinsCollected >= 15) stars = 2;
             if (coinsCollected >= 20 && time < 60) stars = 3;
@@ -53,30 +50,23 @@ public class ResultScreen extends ScreenAdapter {
 
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        skin = SkinFactory.create();
+        Skin skin = SkinFactory.create();
+        float d = Math.max(1f, Gdx.graphics.getDensity());
 
         Table root = new Table();
         root.setFillParent(true);
         stage.addActor(root);
 
-        String title = completed ? "LEVEL COMPLETE!" : "CRASHED!";
-        root.add(new Label(title, skin, "title")).padBottom(40).row();
-
-        root.add(new Label(String.format("Distance: %.0f m", distance), skin)).padBottom(10).row();
-        root.add(new Label(String.format("Coins: %d", coinsCollected), skin)).padBottom(10).row();
+        root.add(new Label(completed ? "LEVEL COMPLETE!" : "CRASHED!", skin, "title")).padBottom(40 * d).row();
+        root.add(new Label(String.format("Distance: %.0f m", distance), skin)).padBottom(10 * d).row();
+        root.add(new Label(String.format("Coins: %d", coinsCollected), skin)).padBottom(10 * d).row();
 
         if (completed) {
-            int minutes = (int) (time / 60);
-            int seconds = (int) (time % 60);
-            root.add(new Label(String.format("Time: %d:%02d", minutes, seconds), skin)).padBottom(10).row();
-
-            int stars = game.getSaveManager().getLevelStars(worldId, levelIndex);
-            StringBuilder starText = new StringBuilder();
-            for (int i = 0; i < 3; i++) starText.append(i < stars ? "* " : "- ");
-            root.add(new Label(starText.toString().trim(), skin)).padBottom(10).row();
+            int m = (int) (time / 60), s = (int) (time % 60);
+            root.add(new Label(String.format("Time: %d:%02d", m, s), skin)).padBottom(10 * d).row();
         }
 
-        root.add().height(30).row();
+        root.add().height(30 * d).row();
 
         TextButton retryBtn = new TextButton("RETRY", skin);
         retryBtn.addListener(new ClickListener() {
@@ -85,7 +75,7 @@ public class ResultScreen extends ScreenAdapter {
                 game.setScreen(new GameScreen(game, worldId, levelIndex));
             }
         });
-        root.add(retryBtn).width(250).height(70).padBottom(15).row();
+        root.add(retryBtn).width(340 * d).height(85 * d).padBottom(14 * d).row();
 
         if (completed && levelIndex < 4) {
             TextButton nextBtn = new TextButton("NEXT LEVEL", skin);
@@ -95,7 +85,7 @@ public class ResultScreen extends ScreenAdapter {
                     game.setScreen(new GameScreen(game, worldId, levelIndex + 1));
                 }
             });
-            root.add(nextBtn).width(250).height(70).padBottom(15).row();
+            root.add(nextBtn).width(340 * d).height(85 * d).padBottom(14 * d).row();
         }
 
         TextButton menuBtn = new TextButton("MENU", skin);
@@ -105,26 +95,19 @@ public class ResultScreen extends ScreenAdapter {
                 game.setScreen(new MenuScreen(game));
             }
         });
-        root.add(menuBtn).width(250).height(70);
+        root.add(menuBtn).width(340 * d).height(85 * d);
     }
 
     @Override
     public void render(float delta) {
-        float r = completed ? 0.05f : 0.15f;
-        float g = completed ? 0.12f : 0.04f;
-        Gdx.gl.glClearColor(r, g, 0.1f, 1f);
+        Gdx.gl.glClearColor(completed ? 0.04f : 0.12f, completed ? 0.08f : 0.03f, 0.08f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act(delta);
         stage.draw();
     }
 
     @Override
-    public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
-    }
-
+    public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
     @Override
-    public void dispose() {
-        if (stage != null) stage.dispose();
-    }
+    public void dispose() { if (stage != null) stage.dispose(); }
 }

@@ -314,42 +314,55 @@ public class AssetGenerator implements Disposable {
     }
 
     private void generateControlButtons() {
-        // Gas pedal (right side)
-        int s = 96;
+        int s = 160;
+        int cx = s / 2, cy = s / 2, r = s / 2 - 4;
+
+        // Gas pedal - smooth gradient circle
         Pixmap pm = new Pixmap(s, s, Pixmap.Format.RGBA8888);
-        setColor(pm, 0.15f, 0.65f, 0.2f, 0.55f);
-        pm.fillCircle(s / 2, s / 2, s / 2 - 2);
-        setColor(pm, 0.2f, 0.8f, 0.3f, 0.7f);
-        pm.fillCircle(s / 2, s / 2, s / 2 - 8);
-        // Arrow up
-        setColor(pm, 1f, 1f, 1f, 0.9f);
-        pm.fillRectangle(s / 2 - 3, s / 2 - 14, 6, 28);
-        pm.fillRectangle(s / 2 - 10, s / 2 - 8, 20, 6);
+        drawSoftCircle(pm, cx, cy, r, 0.1f, 0.7f, 0.2f, 0.75f);
+        drawSoftCircle(pm, cx, cy, r - 12, 0.15f, 0.85f, 0.25f, 0.85f);
+        // Up arrow
+        setColor(pm, 1f, 1f, 1f, 0.95f);
+        pm.fillRectangle(cx - 4, cy - 22, 8, 44);
+        pm.fillRectangle(cx - 16, cy - 14, 32, 8);
         store("btn_gas", pm);
 
-        // Tilt left button
+        // Tilt left
         pm = new Pixmap(s, s, Pixmap.Format.RGBA8888);
-        setColor(pm, 0.6f, 0.4f, 0.15f, 0.55f);
-        pm.fillCircle(s / 2, s / 2, s / 2 - 2);
-        setColor(pm, 0.75f, 0.55f, 0.2f, 0.7f);
-        pm.fillCircle(s / 2, s / 2, s / 2 - 8);
-        // Arrow left
-        setColor(pm, 1f, 1f, 1f, 0.9f);
-        pm.fillRectangle(s / 2 - 14, s / 2 - 3, 28, 6);
-        pm.fillRectangle(s / 2 - 8, s / 2 - 10, 6, 20);
+        drawSoftCircle(pm, cx, cy, r, 0.7f, 0.45f, 0.1f, 0.65f);
+        drawSoftCircle(pm, cx, cy, r - 12, 0.85f, 0.55f, 0.15f, 0.8f);
+        setColor(pm, 1f, 1f, 1f, 0.95f);
+        pm.fillRectangle(cx - 22, cy - 4, 44, 8);
+        pm.fillRectangle(cx - 14, cy - 16, 8, 32);
         store("btn_tilt_left", pm);
 
-        // Tilt right button
+        // Tilt right
         pm = new Pixmap(s, s, Pixmap.Format.RGBA8888);
-        setColor(pm, 0.6f, 0.4f, 0.15f, 0.55f);
-        pm.fillCircle(s / 2, s / 2, s / 2 - 2);
-        setColor(pm, 0.75f, 0.55f, 0.2f, 0.7f);
-        pm.fillCircle(s / 2, s / 2, s / 2 - 8);
-        // Arrow right
-        setColor(pm, 1f, 1f, 1f, 0.9f);
-        pm.fillRectangle(s / 2 - 14, s / 2 - 3, 28, 6);
-        pm.fillRectangle(s / 2 + 2, s / 2 - 10, 6, 20);
+        drawSoftCircle(pm, cx, cy, r, 0.7f, 0.45f, 0.1f, 0.65f);
+        drawSoftCircle(pm, cx, cy, r - 12, 0.85f, 0.55f, 0.15f, 0.8f);
+        setColor(pm, 1f, 1f, 1f, 0.95f);
+        pm.fillRectangle(cx - 22, cy - 4, 44, 8);
+        pm.fillRectangle(cx + 6, cy - 16, 8, 32);
         store("btn_tilt_right", pm);
+    }
+
+    private void drawSoftCircle(Pixmap pm, int cx, int cy, int radius,
+                                 float r, float g, float b, float maxAlpha) {
+        for (int y = cy - radius; y <= cy + radius; y++) {
+            for (int x = cx - radius; x <= cx + radius; x++) {
+                if (x < 0 || y < 0 || x >= pm.getWidth() || y >= pm.getHeight()) continue;
+                float dist = (float) Math.sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+                if (dist <= radius) {
+                    float edge = Math.max(0, 1f - (dist / radius));
+                    float alpha = edge * maxAlpha;
+                    pm.setColor(r, g, b, alpha);
+                    Pixmap.Blending old = pm.getBlending();
+                    pm.setBlending(Pixmap.Blending.SourceOver);
+                    pm.drawPixel(x, y);
+                    pm.setBlending(old);
+                }
+            }
+        }
     }
 
     // ---- Helpers ----
