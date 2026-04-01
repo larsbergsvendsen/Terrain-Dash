@@ -328,28 +328,32 @@ public class GameWorld implements Disposable {
 
     // Called by ContactHandler
     public void collectCoin() {
-        coinsCollected++;
+        float vx = vehicle.getPosition().x;
+        float vy = vehicle.getPosition().y;
         for (CoinEntity coin : coins) {
             if (!coin.collected) {
-                float dx = coin.x - vehicle.getPosition().x;
-                float dy = coin.y - vehicle.getPosition().y;
-                if (dx * dx + dy * dy < 4f) {
+                float dx = coin.x - vx;
+                float dy = coin.y - vy;
+                if (dx * dx + dy * dy < 9f) {
                     coin.collected = true;
-                    break;
+                    coinsCollected++;
+                    return;
                 }
             }
         }
     }
 
     public void addNitro(float amount) {
-        nitroFuel = Math.min(nitroFuel + amount, Constants.NITRO_DURATION);
+        float vx = vehicle.getPosition().x;
+        float vy = vehicle.getPosition().y;
         for (BoostEntity boost : boosts) {
             if (!boost.used) {
-                float dx = boost.x - vehicle.getPosition().x;
-                float dy = boost.y - vehicle.getPosition().y;
-                if (dx * dx + dy * dy < 4f) {
+                float dx = boost.x - vx;
+                float dy = boost.y - vy;
+                if (dx * dx + dy * dy < 9f) {
                     boost.used = true;
-                    break;
+                    nitroFuel = Math.min(nitroFuel + amount, Constants.NITRO_DURATION);
+                    return;
                 }
             }
         }
@@ -367,8 +371,10 @@ public class GameWorld implements Disposable {
         this.levelComplete = complete;
     }
 
+    private final Vector2 tempPosition = new Vector2();
+
     public Vector2 getVehiclePosition() {
-        return vehicle.getPosition();
+        return tempPosition.set(vehicle.getPosition());
     }
 
     public float getVehicleSpeed() {

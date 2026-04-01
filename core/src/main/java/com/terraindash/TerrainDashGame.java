@@ -10,6 +10,7 @@ import com.terraindash.audio.SFXManager;
 import com.terraindash.audio.SoundGenerator;
 import com.terraindash.data.SaveManager;
 import com.terraindash.screens.MenuScreen;
+import com.terraindash.ui.SkinFactory;
 
 public class TerrainDashGame extends Game {
 
@@ -71,11 +72,12 @@ public class TerrainDashGame extends Game {
 
     @Override
     public void dispose() {
+        super.dispose();
+        SkinFactory.dispose();
         if (batch != null) batch.dispose();
         if (musicManager != null) musicManager.dispose();
         if (sfxManager != null) sfxManager.dispose();
         if (musicGenerator != null) musicGenerator.dispose();
         if (uiSoundGenerator != null) uiSoundGenerator.dispose();
-        super.dispose();
     }
 }

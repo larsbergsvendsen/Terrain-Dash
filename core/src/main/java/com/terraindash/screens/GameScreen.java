@@ -70,7 +70,13 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        if (paused || gameEnded) return;
+        // Always clear and draw, even when paused/ended, to avoid stale framebuffer
+        game.getMusicManager().update(delta);
+
+        if (paused || gameEnded) {
+            draw();
+            return;
+        }
 
         delta = Math.min(delta, 0.05f);
 

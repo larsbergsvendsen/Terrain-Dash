@@ -110,6 +110,7 @@ public class HUD implements Disposable {
 
     @Override
     public void dispose() {
+        if (stage != null) stage.dispose();
         if (font != null) font.dispose();
         if (smallFont != null) smallFont.dispose();
     }
